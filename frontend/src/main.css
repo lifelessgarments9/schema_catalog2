@@ -1,0 +1,370 @@
+/* --- Общие настройки темы (Пастельные бледные тона) --- */
+:root {
+    --bg-color: #f7f9fa;
+    --card-bg: #ffffff;
+    --text-main: #4a5568;
+    --text-muted: #718096;
+    --accent-pale: #e2eafc;
+    --accent-hover: #d2daf0;
+    --accent-text: #4a6fa5;
+    --skeleton-base: #edf2f7;
+    --skeleton-animation: #f7f9fa;
+    --border-pale: #edf2f7;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Заголовки --- */
+.section-title {
+    color: var(--text-main);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+/* --- Карточка устройства (Device Card) --- */
+.device-card {
+    background-color: var(--card-bg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-pale) !important;
+}
+
+.device-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+.image-container {
+    background-color: var(--bg-color);
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 15px;
+}
+
+.device-image {
+    max-height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.device-card-title {
+    color: var(--text-main);
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Кнопка внутри карточки */
+.btn-card-link {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-card-link:hover {
+    background-color: var(--accent-pale);
+    color: var(--accent-text);
+}
+
+/* --- Скелетоны загрузки --- */
+.skeleton-card {
+    pointer-events: none;
+}
+
+.skeleton-block {
+    /* полупрозрачный Перелив */
+    background-image: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 25%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.structural-img {
+    width: 100%;
+    height: 240px !important;
+}
+
+.structural-title {
+    width: 60%;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.structural-text {
+    height: 14px;
+    border-radius: 4px;
+}
+
+.structural-btn {
+    height: 38px;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* --- Основные кастомные кнопки --- */
+.btn-custom {
+    background-color: var(--accent-pale);
+    color: var(--accent-text);
+    font-weight: 500;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-custom:hover {
+    background-color: var(--accent-hover);
+    color: var(--accent-text);
+}
+
+/* --- Кнопка Назад --- */
+.btn-back {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.btn-back:hover {
+    color: var(--text-main);
+}
+
+/* --- Кнопка CAS (МГТУ) --- */
+.btn-cas {
+    background-color: #1a3a6b;
+    color: #ffffff;
+    font-weight: 500;
+    border: none;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    letter-spacing: 0.02em;
+}
+
+.btn-cas:hover {
+    background-color: #14305a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(26, 58, 107, 0.25);
+}
+
+.btn-cas:active {
+    background-color: #0f2545;
+    color: #ffffff;
+}
+
+/* --- Разделитель "или" --- */
+.auth-divider hr {
+    border-color: var(--border-pale);
+    opacity: 1;
+}
+
+.auth-divider span {
+    white-space: nowrap;
+    color: var(--text-muted);
+}
+
+/* --- Страница авторизации (AuthPage) --- */
+.auth-wrapper {
+    background-color: var(--bg-color);
+}
+
+.auth-card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 440px;
+    border: 1px solid var(--border-pale);
+}
+
+.auth-tabs {
+    background-color: var(--bg-color);
+}
+
+.auth-tabs .nav-link {
+    color: var(--text-muted);
+    font-weight: 500;
+    border: none;
+    background: none;
+}
+
+.auth-tabs .nav-link.active {
+    background-color: var(--card-bg) !important;
+    color: var(--accent-text) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.custom-input {
+    background-color: var(--bg-color);
+    border: 1px solid transparent;
+    color: var(--text-main);
+}
+
+.custom-input:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
+}
+
+.custom-alert {
+    background-color: #ffeef0;
+    border: none;
+    color: #ea5455;
+}
+
+.structural-title,
+.structural-text,
+.structural-btn {
+    background-color: #edf2f7;
+}
+
+/* --- Страница добавления устройства (AddDevicePage) --- */
+.add-device-section {
+    background-color: var(--bg-color);
+}
+
+.add-device-card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 550px; /* Оптимальная ширина для длинной формы */
+    border: 1px solid var(--border-pale);
+}
+
+/* Мягкий цвет для подписей полей */
+.custom-form-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Стилизация полей выбора файлов */
+.custom-file-input {
+    background-color: var(--bg-color);
+    border: 1px dashed var(--accent-hover);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.custom-file-input:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent-text);
+    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
+}
+
+/* Кастомный пастельный чекбокс */
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--accent-hover);
+    border-radius: 4px !important;
+    cursor: pointer;
+}
+
+.custom-checkbox:checked {
+    background-color: var(--accent-text);
+    border-color: var(--accent-text);
+}
+
+.custom-checkbox:focus {
+    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
+    border-color: var(--accent-hover);
+}
+
+/* --- Шапка приложения (Header) --- */
+.header-navbar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-pale) !important;
+}
+
+.header-logo {
+    color: var(--accent-text) !important;
+    font-size: 1.3rem;
+    letter-spacing: -0.5px;
+}
+
+/* --- Страница устройства (DevicePage) --- */
+.device-detail-section {
+    background-color: var(--bg-color);
+}
+
+.device-detail-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-pale) !important;
+}
+
+/* Большой контейнер для фотографии девайса */
+.image-detail-container {
+    background-color: var(--bg-color);
+    min-height: 300px;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.device-detail-image {
+    max-height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply; /* Убирает задний фон картинки, если он белый */
+}
+
+.device-detail-title {
+    color: var(--text-main);
+}
+
+/* Пастельный бейдж категории */
+.category-badge {
+    background-color: var(--accent-pale) !important;
+    color: var(--accent-text) !important;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* Контейнер таблицы технических параметров */
+.device-info-grid {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-pale);
+}
+
+.device-info-grid .border-bottom {
+    border-bottom-color: var(--border-pale) !important;
+}
+
+.info-label {
+    font-size: 0.95rem;
+}
+
+.info-value {
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.chat-container {
+    height: calc(100vh - 60px); /* Высота экрана минус header */
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-input {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #eee;
+}

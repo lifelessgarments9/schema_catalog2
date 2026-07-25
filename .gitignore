@@ -1,0 +1,74 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+.Python
+env/
+venv/
+.venv/
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+static/
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Environment
+.env
+*.env
+
+# Backend
+backend/settings_example.py
+backend/config/settings.py
+backend/to_remove.txt
+backend/catalog context.txt
+backend/global_packages_backup.txt
+backend/test_simple.py
+backend/urls.py
+backend/*.log
+
+# Frontend - игнорировать всё, кроме src
+frontend/*
+!frontend/src/
+!frontend/src/**/*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+build/
+dist/
+.parcel-cache/
+
+# Docker
+*.dockerignore
+Dockerfile
+docker-compose.override.yml
+
+# Misc
+*.zip
+*.tar.gz
+*.rar
+*.7z

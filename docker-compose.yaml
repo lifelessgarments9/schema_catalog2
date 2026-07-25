@@ -1,0 +1,51 @@
+services:
+  backend:
+    build: ./backend
+    container_name: django_backend
+
+    volumes:
+      # Монтируем код для hot-reload при разработке
+      - ./backend:/app
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DJANGO_SETTINGS_MODULE: "config.settings"
+      DJANGO_DEBUG: "True"
+      # реальный ключ в .env файл в production!!!!!
+      DJANGO_SECRET_KEY: "django-insecure-!xve7ohazixhvhm7+hy4(+z(3j+uh(2!x#y4a6_*m^eb%)f%j#"
+
+    #healthcheck:
+      #test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      #interval: 10s #30s
+      #timeout: 5s #10s
+      #retries: 3
+      #start_period: 5s #40s
+
+    restart: unless-stopped
+
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+
+    volumes:
+      - ./frontend:/app
+      # Изолируем node_modules контейнера — не перезаписываем хостовыми
+      - /app/node_modules
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      # URL бэкенда для API-запросов из браузера
+      - REACT_APP_API_URL=http://localhost:8000
+
+    depends_on:
+      - backend
+      #backend:
+        #condition: service_healthy
+
+    restart: unless-stopped
