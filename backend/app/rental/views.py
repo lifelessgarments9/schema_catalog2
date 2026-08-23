@@ -1,32 +1,38 @@
+import io
+from django.http import FileResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 from app.catalog.serializers import DeviceSerializer
 from app.rental.models import RentalRequest
 from app.rental.serializers import RentalRequestSerializer
 from app.rental.services import CartService, RentalRequestService
+from app.rental.pdf import PdfService
 
+class RentalRequestPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class RentalRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        if self.request.method in ("PATCH", "DELETE"):
+        if self.request.method in ("PATCH", "DELETE", "PUT"):
             return [IsAdminUser()]
         return [IsAuthenticated()]
-
-    def get(self, request):
-        qs = RentalRequestService.get_requests(request.user)
-        return Response(RentalRequestSerializer(qs, many=True).data)
 
     def get(self, request, pk=None):
         if pk is None:
             qs = RentalRequestService.get_requests(request.user)
-            return Response(
-                RentalRequestSerializer(qs, many=True).data
-            )
+
+            paginator = RentalRequestPagination()
+            page = paginator.paginate_queryset(qs, request)
+            serializer = RentalRequestSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
         rental = RentalRequest.objects.get(pk=pk)
 
@@ -100,3 +106,38 @@ class CartView(APIView):
             return Response({"error": "device обязателен."}, status=status.HTTP_400_BAD_REQUEST)
         devices = CartService.remove(request.user.id, int(device_id))
         return Response(DeviceSerializer(devices, many=True, context={"request": request}).data)
+
+class RentalRequestPdfView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            rental = RentalRequest.objects.prefetch_related(
+                "items",
+                "items__device"
+            ).get(pk=pk)
+
+        except RentalRequest.DoesNotExist:
+            return Response(
+                {"error": "Заявка не найдена."},
+                status=404
+            )
+
+        if not request.user.is_staff and rental.student != request.user:
+            return Response(
+                {"error": "Нет доступа к этой заявке."},
+                status=403
+            )
+
+        pdf = PdfService.generate(rental)
+
+        response = FileResponse(
+            io.BytesIO(pdf),
+            content_type="application/pdf"
+        )
+
+        response["Content-Disposition"] = (
+            f'inline; filename="request_{rental.pk}.pdf"'
+        )
+
+        return response

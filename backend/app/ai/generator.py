@@ -1,11 +1,11 @@
+
 import ollama
 
 from app.ai.prompts import GENERATOR_PROMPT
 
 
 class Generator:
-
-    MODEL = "llama3.2:1b"
+    MODEL = "qwen2.5:1.5b"
 
     def generate(self, question: str, context: str) -> str:
 
@@ -13,6 +13,8 @@ class Generator:
             f"Контекст об оборудовании:\n{context}\n\n"
             f"Вопрос пользователя:\n{question}"
         )
+
+        print(f"Запрос: model={self.MODEL}, {user_content}")
 
         response = ollama.chat(
             model=self.MODEL,
@@ -28,7 +30,7 @@ class Generator:
             ],
             options={
                 "temperature": 0.3,
-                "num_predict": 200,
+                "num_predict": 400,
             },
         )
 

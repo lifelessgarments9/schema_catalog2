@@ -15,30 +15,22 @@ from app.ai.serializers import (
 
 
 class AskView(APIView):
-    """
-    POST /ai/chat/
-    Отправить вопрос. Создаёт новый чат если chat_id не передан.
-    Возвращает ответ и список источников (устройств).
-    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = AskSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        result = ChatService().chat(
-            user=request.user,
-            message=serializer.validated_data["message"],
-            chat_id=serializer.validated_data.get("chat_id"),
-        )
-        return Response(result, status=status.HTTP_200_OK)
-
+        try:
+            result = ChatService().chat(
+                user=request.user,
+                message=serializer.validated_data["message"],
+                chat_id=serializer.validated_data.get("chat_id"),
+            )
+            return Response(result, status=status.HTTP_200_OK)
+        except PermissionError as e:
+            return Response({"detail": str(e)},status=status.HTTP_429_TOO_MANY_REQUESTS)
 
 class ChatListCreateView(APIView):
-    """
-    GET  /ai/chats/  — список чатов пользователя
-    POST /ai/chats/  — создать новый чат
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -56,10 +48,6 @@ class ChatListCreateView(APIView):
 
 
 class ChatDetailView(APIView):
-    """
-    GET    /ai/chats/<id>/  — история сообщений чата
-    DELETE /ai/chats/<id>/  — удалить чат
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):

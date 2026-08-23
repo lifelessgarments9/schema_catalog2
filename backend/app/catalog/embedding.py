@@ -16,8 +16,6 @@ class EmbeddingService:
 
         if device.name:
             parts.append(f"Название: {device.name}")
-        if device.description:
-            parts.append(f"Описание: {device.description}")
         if device.specifications:
             specs = device.specifications
             if isinstance(specs, str):
@@ -27,6 +25,8 @@ class EmbeddingService:
                     specs = {}
             specs_text = "; ".join(f"{k}: {v}" for k, v in specs.items())
             parts.append(f"Характеристики: {specs_text}")
+        if device.description:
+            parts.append(f"Описание: {device.description}")
         if device.doc_text:
             parts.append(f"Документация:\n{device.doc_text[:doc_limit]}")
 

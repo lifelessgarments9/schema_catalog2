@@ -8,8 +8,8 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(use_url=True)
     class Meta:
         model = User
-        fields = ["id", "username", "email","avatar", "bio" , "is_staff"]
-        read_only_fields = ["id"]
+        fields = ["id", "username", "email","avatar", "bio" , "is_staff","ai_requests","ai_restore_at",]
+        read_only_fields = ["id","ai_requests","ai_restore_at",]
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150, validators=[UniqueValidator(queryset=User.objects.all())])

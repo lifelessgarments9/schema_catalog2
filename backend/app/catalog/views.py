@@ -3,15 +3,21 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Sum
 
 from app.catalog.serializers import DeviceSerializer, CategorySerializer
 from app.catalog.services import CatalogService
-from app.catalog.models import Device
+from app.catalog.models import Device, Category
 
 
 from drf_spectacular.utils import extend_schema
 from django.shortcuts import get_object_or_404
 
+class DevicePagination(PageNumberPagination):
+    page_size = 8
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
 class DeviceListView(APIView):
     parser_classes = [MultiPartParser, FormParser]
@@ -25,9 +31,17 @@ class DeviceListView(APIView):
         responses=DeviceSerializer(many=True),
     )
     def get(self, request):
-        params = request.query_params.dict()
+        params = {
+            key: value
+            for key, value in request.query_params.items()
+            if key not in ("page", "page_size")
+        }
         devices = CatalogService.get_all(filters=params or None)
-        return Response(DeviceSerializer(devices, many=True, context={"request": request}).data)
+
+        paginator = DevicePagination()
+        page = paginator.paginate_queryset(devices, request)
+        serializer = DeviceSerializer(page,many=True,context={"request": request})
+        return paginator.get_paginated_response(serializer.data)
 
     @extend_schema(
         request=DeviceSerializer,
@@ -82,3 +96,19 @@ class CategoryView(APIView):
     def get(self, request):
         categories = CatalogService.get_categories()
         return Response(CategorySerializer(categories, many=True, context={"request": request}).data)
+
+class CatalogStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        total = Device.objects.aggregate(total=Sum("quantity"))["total"] or 0
+
+        available = Device.objects.filter(is_available=True,quantity__gt=0).count()
+
+        categories = Category.objects.count()
+
+        return Response({
+            "total_devices": total,
+            "available_devices": available,
+            "categories": categories,
+        })

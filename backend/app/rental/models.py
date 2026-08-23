@@ -1,10 +1,12 @@
 from django.db import models
+import uuid
 
 from app.accounts.models import User
 from app.catalog.models import Device
 
 
 class RentalRequest(models.Model):
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     STATUS_CHOICES = [
         ("pending",  "Ожидает"),
         ("approved", "Подтверждена"),
@@ -19,7 +21,6 @@ class RentalRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     issue_date = models.DateField(null=True, blank=True)
     status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    pdf        = models.FileField(upload_to="requests/pdf/", null=True, blank=True)
 
     def __str__(self):
         return f"#{self.pk} {self.full_name} [{self.status}]"

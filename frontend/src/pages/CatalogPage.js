@@ -5,6 +5,10 @@ import DeviceCard from "../components/DeviceCard";
 import { getCategories, getDevices } from "../api";
 
 export default function CatalogPage() {
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const PAGE_SIZE = 8;
+
     const [devices, setDevices] = useState(null);
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("");
@@ -24,16 +28,49 @@ export default function CatalogPage() {
 
     useEffect(() => {
         load();
+    }, [page]);
+
+    useEffect(() => {
         loadAllCategories();
     }, []);
 
     async function load() {
-        const data = await getDevices({ search, category, is_available: isAvailable });
-        setDevices(data ?? []);
+        setDevices(null);
+
+        try {
+            const data = await getDevices(
+                {
+                    search,
+                    category,
+                    is_available: isAvailable
+                },
+                page,
+                PAGE_SIZE
+            );
+            console.log("COUNT:", data.count, "TOTAL PAGES:", Math.ceil(data.count / PAGE_SIZE));
+
+            setDevices(data.results || []);
+
+            setTotalPages(
+                Math.max(
+                    1,
+                    Math.ceil((data.count || 0) / PAGE_SIZE)
+                )
+            );
+
+        } catch (error) {
+            console.error("Ошибка загрузки каталога:", error);
+            setDevices([]);
+        }
     }
 
     async function loadAllCategories() {
         setAllCategories(await getCategories());
+    }
+
+    function applyFilters() {
+        if (page === 1) {load();}
+        else {setPage(1);}
     }
 
     const renderContent = () => {
@@ -42,9 +79,9 @@ export default function CatalogPage() {
                 <div className="row g-4">
                     {Array.from({ length: 8 }).map((_, index) => (
                         <div key={index} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                            <div className="card device-card h-100 border-0 p-3 rounded-4 shadow-sm text-center skeleton-card">
+                            <div className="card device-card h-100 p-3 text-center skeleton-card">
                                 <div
-                                    className="image-container mb-3 rounded-3 skeleton-block structural-img"
+                                    className="image-container mb-3 skeleton-block structural-img"
                                     style={{ backgroundColor: colors[index] }}
                                 />
                                 <div className="card-body d-flex flex-column p-0 align-items-center">
@@ -82,7 +119,7 @@ export default function CatalogPage() {
     };
 
     return (
-        <section className="catalog-section py-5">
+        <section className="catalog-section py-5 ">
             <div className="container">
                 <button onClick={() => navigate("/")} className="btn btn-back btn-sm mb-4">
                     ← На главную
@@ -92,10 +129,10 @@ export default function CatalogPage() {
 
                 <div className="row align-items-center mb-4 g-3">
                     <div className="col-md-3">
-                        <div className="card border-0 shadow-sm rounded-4 p-3">
-                            <h5 className="mb-3">Фильтры</h5>
+                        <div className="card p-4">
+                            <h5 className="mb-3 fw-bold">Фильтры</h5>
                             <div className="mb-3">
-                                <label className="form-label">Категория</label>
+                                <label className="form-label custom-form-label">Категория</label>
                                 <select
                                     className="form-select"
                                     value={category}
@@ -113,19 +150,22 @@ export default function CatalogPage() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="form-check mb-3">
+                            <div className="form-check mb-3 d-flex align-items-center gap-2 ps-0">
                                 <input
-                                    className="form-check-input"
+                                    className="form-check-input custom-checkbox m-0"
                                     type="checkbox"
-                                    checked={isAvailable===true}
+                                    checked={isAvailable === true}
                                     onChange={(e) => setIsAvailable(e.target.checked)}
                                     id="available"
                                 />
-                                <label className="form-check-label" htmlFor="available">
+                                <label className="form-check-label custom-form-label user-select-none" htmlFor="available">
                                     В наличии
                                 </label>
                             </div>
-                            <button className="btn btn-custom w-100" onClick={load}>
+                            <button
+                                className="btn btn-custom w-100"
+                                onClick={applyFilters}
+                            >
                                 Применить
                             </button>
                         </div>
@@ -133,17 +173,19 @@ export default function CatalogPage() {
                     <div className="col-md-9">
                         <div className="input-group">
                             <input
-                                className="form-control rounded-start-pill"
+                                className="form-control custom-input rounded-start-pill px-4 py-2"
                                 placeholder="Поиск..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === "Enter") load();
+                                    if (e.key === "Enter") {
+                                        applyFilters();
+                                    }
                                 }}
                             />
                             <button
-                                className="btn btn-custom rounded-end-pill"
-                                onClick={() => load()}
+                                className="btn btn-custom rounded-end-pill px-4"
+                                onClick={applyFilters}
                             >
                                 Найти
                             </button>
@@ -152,6 +194,32 @@ export default function CatalogPage() {
                 </div>
 
                 {renderContent()}
+                {devices !== null && totalPages > 1 && (
+                    <nav className="d-flex justify-content-center mt-5">
+                        <ul className="pagination">
+                            {page > 1 && (
+                                <li className="page-item">
+                                    <button className="page-link" onClick={() => setPage(p => p - 1)}>
+                                        ←
+                                    </button>
+                                </li>
+                            )}
+                            <li className="page-item active">
+                                <span className="page-link">
+                                    {page} / {totalPages}
+                                </span>
+                            </li>
+                            {page < totalPages && (
+                                <li className="page-item">
+                                    <button className="page-link" onClick={() => setPage(p => p + 1)}>
+                                        →
+                                    </button>
+                                </li>
+                            )}
+
+                        </ul>
+                    </nav>
+                )}
             </div>
         </section>
     );

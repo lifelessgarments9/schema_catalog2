@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCart, removeDeviceFromCart, createRentalRequest } from "../api";
+import Toast from "../components/Toast";
+import AccessErrorPage from "../components/AccessErrorPage";
 
 export default function CartPage() {
     const navigate = useNavigate();
@@ -12,22 +14,43 @@ export default function CartPage() {
     const [loading, setLoading]       = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError]           = useState("");
+    const [toast, setToast] = useState(null);
 
     useEffect(() => { load(); }, []);
 
     async function load() {
         setLoading(true);
+        setError(null);
         try {
             const data = await getCart();
+            if (!Array.isArray(data)) {
+                throw new Error("Некорректный формат данных корзины");
+            }
             setDevices(
-                (Array.isArray(data) ? data : []).map(d => ({
+                data.map(d => ({
                     ...d,
                     quantity: 1,
                     return_date: "",
                 }))
             );
-        } catch {
-            setError("Не удалось загрузить корзину.");
+        } catch (error) {
+            console.error("Ошибка загрузки корзины:", error);
+            if (error.status === 401) {
+                setError({
+                    status: 401,
+                    message: "Для просмотра корзины необходимо авторизоваться."
+                });
+            } else if (error.status === 403) {
+                setError({
+                    status: 403,
+                    message: "У вас нет доступа к корзине."
+                });
+            } else {
+                setError({
+                    status: 500,
+                    message: error.message || "Не удалось загрузить корзину."
+                });
+            }
         } finally {
             setLoading(false);
         }
@@ -48,14 +71,10 @@ export default function CartPage() {
 
     async function submit() {
         setError("");
-
-        // Валидация заголовка заявки
         if (!fullName.trim() || !group.trim() || !discipline.trim()) {
             setError("Заполните ФИО, группу и дисциплину.");
             return;
         }
-
-        // Валидация строк табличной части
         for (const d of devices) {
             if (!d.return_date) {
                 setError(`Укажите дату возврата для «${d.name}».`);
@@ -81,7 +100,7 @@ export default function CartPage() {
             });
 
             if (result?.id) {
-                alert("Заявка успешно отправлена!");
+                setToast({message: "Заявка успешно отправлена"});
                 navigate("/profile");
             } else {
                 setError(result?.detail || result?.error || "Ошибка при отправке заявки.");
@@ -95,19 +114,31 @@ export default function CartPage() {
 
     if (loading) {
         return (
-            <section className="py-5">
-                <div className="container">
-                    <p>Загрузка корзины…</p>
+            <section className="cart-section">
+                <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: 'calc(100vh - 64px)' }}>
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Загрузка...</span>
+                    </div>
                 </div>
             </section>
         );
     }
 
+    if (error) {
+        return (
+            <AccessErrorPage
+                status={error.status}
+                message={error.message}
+                onRetry={error.status >= 500 ? load : null}
+            />
+        );
+    }
+
     return (
-        <section className="py-5">
+        <section className="cart-section">
             <div className="container">
 
-                <h2 className="mb-4">Корзина</h2>
+                <h2 className="section-title mb-4">Корзина</h2>
 
                 {error && (
                     <div className="alert alert-danger">{error}</div>
@@ -214,6 +245,12 @@ export default function CartPage() {
                         {submitting ? "Отправка…" : "Отправить заявку"}
                     </button>
                 </div>
+                {toast && (
+                    <Toast
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                )}
 
             </div>
         </section>

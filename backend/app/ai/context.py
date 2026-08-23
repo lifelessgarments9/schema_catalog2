@@ -7,7 +7,7 @@ class ContextBuilder:
 
         parts = []
         for i, (device, score) in enumerate(scored_devices, 1):
-            text = EmbeddingService.build_device_text(device, doc_limit=1500)
+            text = EmbeddingService.build_device_text(device, doc_limit=10000)
             parts.append(f"Устройство {i} (релевантность: {score:.0%})\n{text}")
 
         return "\n\n".join(parts)

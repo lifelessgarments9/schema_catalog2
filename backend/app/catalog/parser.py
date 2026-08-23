@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class DocumentParser:
+    MAX_CHARS = 10000
 
     @staticmethod
     def parse(file_path: str) -> str:
@@ -17,14 +18,16 @@ class DocumentParser:
     @staticmethod
     def _read_txt(path: str) -> str:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            return f.read()
+            content = f.read(DocumentParser.MAX_CHARS)
+            return content
 
     @staticmethod
     def _read_pdf(path: str) -> str:
         try:
             import pypdf
             reader = pypdf.PdfReader(path)
-            return "\n".join(page.extract_text() or "" for page in reader.pages)
+            full_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            return full_text[:DocumentParser.MAX_CHARS]
         except Exception as e:
             logger.error(f"Ошибка чтения PDF {path}: {e}", exc_info=True)
             return ""

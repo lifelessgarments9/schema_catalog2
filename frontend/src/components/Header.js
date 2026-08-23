@@ -10,22 +10,23 @@ export default function Header({ currentUser }) {
                 <Link to="/" className="navbar-brand header-logo fw-bold mb-0 h4 text-decoration-none">
                     Фаблаб
                 </Link>
-                {currentUser && (
-                    <Link to="/cart" className="btn btn-custom">
-                        Корзина
-                    </Link>
-                )}
-                {currentUser?.is_staff && (
-                    <Link as={Link} to="/requests" className="btn btn-custom">
-                        Заявки
-                    </Link>
-                )}
 
-                <Link as={Link} to="/chats" className="btn btn-custom">
-                    Ассистент
-                </Link>
+                <div className="d-flex align-items-center gap-2">
+                    {currentUser && (
+                        <Link to="/cart" className="btn btn-custom">
+                            Корзина
+                        </Link>
+                    )}
+                    {currentUser?.is_staff && (
+                        <Link to="/requests" className="btn btn-custom">
+                            Заявки
+                        </Link>
+                    )}
 
-                <div>
+                    <Link to="/chats" className="btn btn-custom">
+                        Ассистент
+                    </Link>
+
                     {currentUser ? (
                         <button
                             className="btn btn-custom rounded-pill px-4"

@@ -2,7 +2,6 @@ import math
 
 
 def cosine_similarity(a: list, b: list) -> float:
-    """Вычислить косинусное сходство двух векторов."""
     if not a or not b or len(a) != len(b):
         return 0.0
     dot = sum(x * y for x, y in zip(a, b))

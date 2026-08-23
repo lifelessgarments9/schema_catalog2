@@ -6,7 +6,7 @@ from app.ai.models import Chat, ChatMessage
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ("id", "role", "content", "created_at")
+        fields = ("id", "role", "content", "created_at", "sources")
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class ChatCreateSerializer(serializers.Serializer):
 
 class AskSerializer(serializers.Serializer):
     message = serializers.CharField()
-    chat_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    chat_id = serializers.UUIDField(required=False,allow_null=True,default=None,)
 
 
 class SourceSerializer(serializers.Serializer):
@@ -29,6 +29,6 @@ class SourceSerializer(serializers.Serializer):
 
 
 class AnswerSerializer(serializers.Serializer):
-    chat_id = serializers.IntegerField()
+    chat_id = serializers.UUIDField(required=False,allow_null=True,default=None,)
     answer = serializers.CharField()
     sources = SourceSerializer(many=True)

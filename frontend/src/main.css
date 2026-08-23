@@ -1,41 +1,320 @@
-/* --- Общие настройки темы (Пастельные бледные тона) --- */
+/* ================================================================
+   GLOBAL DESIGN SYSTEM — Pastel Soft Theme
+   Google Font: Inter
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ----------------------------------------------------------------
+   CSS Custom Properties
+---------------------------------------------------------------- */
 :root {
-    --bg-color: #f7f9fa;
+    /* Colors */
+    --bg-color: #f8f9fb;
     --card-bg: #ffffff;
-    --text-main: #4a5568;
-    --text-muted: #718096;
-    --accent-pale: #e2eafc;
-    --accent-hover: #d2daf0;
+    --text-main: #3d4a5c;
+    --text-muted: #8896a8;
+    --accent-pale: #dde8fb;
+    --accent-mid: #c4d4f6;
+    --accent-hover: #b3c6f0;
     --accent-text: #4a6fa5;
+    --accent-dark: #3558a0;
+    --border-pale: #e8eef8;
+    --danger-pale: #fde8eb;
+    --danger-text: #d9534f;
+    --success-pale: #e3f5ec;
+    --success-text: #2d8a5e;
+    --warning-pale: #fff4e0;
+    --warning-text: #c07a00;
+
+    /* Skeleton */
     --skeleton-base: #edf2f7;
-    --skeleton-animation: #f7f9fa;
-    --border-pale: #edf2f7;
+    --skeleton-shine: #f7faff;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 3px rgba(74, 111, 165, 0.06);
+    --shadow-sm: 0 2px 8px rgba(74, 111, 165, 0.08);
+    --shadow-md: 0 6px 20px rgba(74, 111, 165, 0.12);
+    --shadow-lg: 0 12px 32px rgba(74, 111, 165, 0.16);
+    --shadow-xl: 0 20px 50px rgba(74, 111, 165, 0.20);
+
+    /* Transitions */
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    /* Radius */
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-pill: 999px;
+}
+
+/* ----------------------------------------------------------------
+   Base Reset
+---------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-main);
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Заголовки --- */
-.section-title {
+/* ----------------------------------------------------------------
+   Typography
+---------------------------------------------------------------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     color: var(--text-main);
     font-weight: 600;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.4px;
 }
 
-/* --- Карточка устройства (Device Card) --- */
-.device-card {
-    background-color: var(--card-bg);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid var(--border-pale) !important;
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.6px;
 }
+
+
+/* ================================================================
+   LAYOUT — Full-screen pages (no extra scroll where not needed)
+================================================================ */
+.home-section,
+.catalog-section,
+.profile-section,
+.add-device-section,
+.device-detail-section {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    background-color: var(--bg-color);
+}
+
+.catalog-section,
+.device-detail-section {
+    justify-content: flex-start;
+}
+
+/* ================================================================
+   HEADER / NAVBAR
+================================================================ */
+.header-navbar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-pale) !important;
+    box-shadow: var(--shadow-xs);
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-logo {
+    color: var(--accent-text) !important;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    transition: opacity 0.2s var(--ease-out);
+}
+
+.header-logo:hover {
+    opacity: 0.75;
+}
+
+/* ================================================================
+   BUTTONS
+================================================================ */
+
+/* Primary custom button */
+.btn-custom {
+    background-color: var(--accent-pale);
+    color: var(--accent-text);
+    font-weight: 500;
+    border: 1.5px solid transparent;
+    border-radius: 50px;
+    padding: 0.45rem 1.15rem;
+    position: relative;
+    overflow: hidden;
+    transition:
+        background-color 0.25s var(--ease-out),
+        color 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out),
+        transform 0.18s var(--ease-out),
+        border-color 0.25s var(--ease-out);
+}
+
+.btn-custom:hover {
+    background-color: var(--accent-hover);
+    color: var(--accent-dark);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn-custom:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-xs);
+    background-color: var(--accent-mid);
+}
+
+.btn-custom:disabled,
+.btn-custom[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.custom-input-group {
+    width: 100%;
+}
+
+.custom-input-group .custom-input {
+    flex: 1;
+    border: 1.5px solid var(--accent-pale);
+    border-radius: 50px;
+    box-shadow: none;
+}
+
+.custom-input-group .custom-input:focus {
+    border-color: var(--accent-mid);
+    box-shadow: none;
+}
+
+.custom-input-group .btn-custom {
+    border: 1.5px solid var(--accent-pale);
+    border-radius: 50px;
+}
+
+/* Back button */
+.btn-back {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    padding: 0;
+    transition: color 0.2s var(--ease-out), transform 0.2s;
+}
+
+.btn-back:hover {
+    color: var(--accent-text);
+    transform: translateX(-3px);
+}
+
+/* CAS (BMSTU) button */
+.btn-cas {
+    background-color: #1a3a6b;
+    color: #ffffff;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--r-md);
+    letter-spacing: 0.02em;
+    transition:
+        background-color 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out),
+        transform 0.18s var(--ease-out);
+}
+
+.btn-cas:hover {
+    background-color: #14305a;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(26, 58, 107, 0.30);
+    transform: translateY(-2px);
+}
+
+.btn-cas:active {
+    background-color: #0f2545;
+    color: #ffffff;
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Outline danger */
+.btn-outline-danger {
+    border-radius: var(--r-md) !important;
+    transition:
+        background-color 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out),
+        transform 0.18s var(--ease-out);
+}
+
+.btn-outline-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 83, 79, 0.2);
+}
+
+/* ================================================================
+   CARDS (global)
+================================================================ */
+.card {
+    border-radius: var(--r-lg) !important;
+    border: 1px solid var(--border-pale) !important;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    transition:
+        transform 0.28s var(--ease-out),
+        box-shadow 0.28s var(--ease-out);
+}
+
+/* ================================================================
+   DEVICE CARD
+================================================================ */
+.device-card {
+    border: 2px solid transparent !important;
+    border-radius: var(--r-lg) !important;
+
+    background:
+        linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.25) 20%,
+            rgba(150, 180, 220, 0.2) 50%,
+            rgba(255, 255, 255, 0.15) 80%,
+            rgba(255, 255, 255, 0.9) 100%
+        ) border-box;
+
+    box-shadow:
+        0 2px 8px rgba(30, 60, 100, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+    transition:
+        transform 0.28s var(--ease-out),
+        box-shadow 0.28s var(--ease-out);
+
+    cursor: pointer;
+}
+
 
 .device-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03) !important;
+    transform: translateY(-8px) scale(1.015);
+
+    box-shadow:
+        0 12px 30px rgba(30, 60, 100, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
+
 
 .image-container {
     background-color: var(--bg-color);
@@ -45,129 +324,229 @@ body {
     justify-content: center;
     overflow: hidden;
     padding: 15px;
+    border-radius: var(--r-md) !important;
+    transition: background-color 0.25s var(--ease-out);
 }
 
+.device-card:hover .image-container {
+    background-color: #eef3fc;
+}
+
+/* Device image zoom on hover */
 .device-image {
     max-height: 100%;
     object-fit: contain;
     mix-blend-mode: multiply;
+    transition: transform 0.4s var(--ease-out);
+}
+
+.device-card:hover .device-image {
+    transform: scale(1.08);
 }
 
 .device-card-title {
     color: var(--text-main);
-    font-weight: 400;
+    font-weight: 500;
+    font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Кнопка внутри карточки */
-.btn-card-link {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-weight: 500;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: background-color 0.2s ease;
-}
 
-.btn-card-link:hover {
-    background-color: var(--accent-pale);
-    color: var(--accent-text);
-}
-
-/* --- Скелетоны загрузки --- */
+/* ================================================================
+   SKELETON LOADING — Shimmer animation
+================================================================ */
 .skeleton-card {
     pointer-events: none;
 }
 
 .skeleton-block {
-    /* полупрозрачный Перелив */
-    background-image: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 25%,
-            rgba(255, 255, 255, 0.5) 50%,
-            rgba(255, 255, 255, 0) 75%
-    );
+    background: linear-gradient(90deg,
+            var(--skeleton-base) 25%,
+            var(--skeleton-shine) 50%,
+            var(--skeleton-base) 75%);
     background-size: 200% 100%;
-    animation: loading-shimmer 1.5s infinite ease-in-out;
+    animation: shimmer 1.6s infinite ease-in-out;
+    border-radius: var(--r-sm);
 }
 
 .structural-img {
     width: 100%;
-    height: 240px !important;
+    height: 180px !important;
+    border-radius: var(--r-md) !important;
 }
 
 .structural-title {
     width: 60%;
-    height: 20px;
-    border-radius: 4px;
+    height: 18px;
+    border-radius: var(--r-sm);
 }
 
 .structural-text {
-    height: 14px;
-    border-radius: 4px;
+    height: 13px;
+    border-radius: var(--r-sm);
 }
 
 .structural-btn {
-    height: 38px;
+    height: 36px;
+    border-radius: var(--r-md) !important;
 }
 
-@keyframes loading-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+.structural-title,
+.structural-text,
+.structural-btn {
+    background-color: var(--skeleton-base);
 }
 
-/* --- Основные кастомные кнопки --- */
-.btn-custom {
-    background-color: var(--accent-pale);
-    color: var(--accent-text);
-    font-weight: 500;
-    border: none;
-    transition: background-color 0.2s ease;
-}
-
-.btn-custom:hover {
-    background-color: var(--accent-hover);
-    color: var(--accent-text);
-}
-
-/* --- Кнопка Назад --- */
-.btn-back {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    padding: 0;
-    transition: color 0.2s ease;
-}
-
-.btn-back:hover {
+/* ================================================================
+   FORM ELEMENTS
+================================================================ */
+.form-control,
+.form-select {
+    border-radius: var(--r-md) !important;
+    border: 1.5px solid var(--border-pale);
+    background-color: var(--bg-color);
     color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    transition:
+        border-color 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out),
+        background-color 0.2s;
 }
 
-/* --- Кнопка CAS (МГТУ) --- */
-.btn-cas {
-    background-color: #1a3a6b;
-    color: #ffffff;
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent-hover);
+    background-color: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(196, 212, 246, 0.45);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+.custom-input {
+    background-color: var(--bg-color);
+    border: 1.5px solid var(--border-pale);
+    color: var(--text-main);
+    border-radius: var(--r-md) !important;
+    transition:
+        border-color 0.25s var(--ease-out),
+        box-shadow 0.25s var(--ease-out),
+        background-color 0.2s;
+}
+
+.custom-input:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 0 3px rgba(196, 212, 246, 0.45);
+}
+
+.custom-file-input {
+    background-color: var(--bg-color);
+    border: 1.5px dashed var(--accent-hover);
+    color: var(--text-muted);
+    border-radius: var(--r-md) !important;
+    cursor: pointer;
+    transition:
+        border-color 0.25s var(--ease-out),
+        background-color 0.2s;
+}
+
+.custom-file-input:hover {
+    background-color: var(--accent-pale);
+    border-color: var(--accent-text);
+}
+
+.custom-file-input:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent-text);
+    box-shadow: 0 0 0 3px rgba(196, 212, 246, 0.45);
+}
+
+.custom-checkbox,
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--accent-hover);
+    border-radius: var(--r-sm) !important;
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        background-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.custom-checkbox:checked,
+.form-check-input:checked {
+    background-color: var(--accent-text);
+    border-color: var(--accent-text);
+}
+
+.custom-checkbox:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(196, 212, 246, 0.45);
+    border-color: var(--accent-hover);
+}
+
+.custom-form-label,
+.form-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+}
+
+/* ================================================================
+   AUTH PAGE
+================================================================ */
+.auth-wrapper {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+}
+
+.auth-card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 440px;
+    border: 1px solid var(--border-pale) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.45s var(--ease-out) both;
+}
+
+.auth-tabs {
+    background-color: var(--bg-color);
+    border-radius: var(--r-pill) !important;
+    padding: 4px;
+}
+
+.auth-tabs .nav-link {
+    color: var(--text-muted);
     font-weight: 500;
     border: none;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-    letter-spacing: 0.02em;
+    background: none;
+    border-radius: var(--r-pill) !important;
+    transition:
+        background-color 0.25s var(--ease-out),
+        color 0.25s var(--ease-out),
+        box-shadow 0.2s;
 }
 
-.btn-cas:hover {
-    background-color: #14305a;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(26, 58, 107, 0.25);
+.auth-tabs .nav-link.active {
+    background-color: var(--card-bg) !important;
+    color: var(--accent-text) !important;
+    box-shadow: var(--shadow-sm);
 }
 
-.btn-cas:active {
-    background-color: #0f2545;
-    color: #ffffff;
+.auth-title {
+    font-size: 1.4rem;
+    font-weight: 700;
 }
 
-/* --- Разделитель "или" --- */
 .auth-divider hr {
     border-color: var(--border-pale);
     opacity: 1;
@@ -176,168 +555,118 @@ body {
 .auth-divider span {
     white-space: nowrap;
     color: var(--text-muted);
-}
-
-/* --- Страница авторизации (AuthPage) --- */
-.auth-wrapper {
-    background-color: var(--bg-color);
-}
-
-.auth-card {
-    background-color: var(--card-bg);
-    width: 100%;
-    max-width: 440px;
-    border: 1px solid var(--border-pale);
-}
-
-.auth-tabs {
-    background-color: var(--bg-color);
-}
-
-.auth-tabs .nav-link {
-    color: var(--text-muted);
-    font-weight: 500;
-    border: none;
-    background: none;
-}
-
-.auth-tabs .nav-link.active {
-    background-color: var(--card-bg) !important;
-    color: var(--accent-text) !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.custom-input {
-    background-color: var(--bg-color);
-    border: 1px solid transparent;
-    color: var(--text-main);
-}
-
-.custom-input:focus {
-    background-color: var(--card-bg);
-    border-color: var(--accent-hover);
-    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
+    font-size: 0.8rem;
 }
 
 .custom-alert {
-    background-color: #ffeef0;
+    background-color: var(--danger-pale);
     border: none;
-    color: #ea5455;
+    border-radius: var(--r-md) !important;
+    color: var(--danger-text);
+    font-size: 0.875rem;
 }
 
-.structural-title,
-.structural-text,
-.structural-btn {
-    background-color: #edf2f7;
-}
-
-/* --- Страница добавления устройства (AddDevicePage) --- */
+/* ================================================================
+   ADD DEVICE PAGE
+================================================================ */
 .add-device-section {
-    background-color: var(--bg-color);
+    align-items: center;
 }
 
 .add-device-card {
     background-color: var(--card-bg);
     width: 100%;
-    max-width: 550px; /* Оптимальная ширина для длинной формы */
-    border: 1px solid var(--border-pale);
+    max-width: 560px;
+    border: 1px solid var(--border-pale) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.45s var(--ease-out) both;
 }
 
-/* Мягкий цвет для подписей полей */
-.custom-form-label {
-    color: var(--text-muted);
-    font-weight: 500;
+/* ================================================================
+   PROFILE PAGE
+================================================================ */
+.profile-section .card {
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-pale) !important;
+    animation: fadeInUp 0.45s var(--ease-out) both;
 }
 
-/* Стилизация полей выбора файлов */
-.custom-file-input {
-    background-color: var(--bg-color);
-    border: 1px dashed var(--accent-hover);
-    color: var(--text-muted);
-    cursor: pointer;
+.rounded-circle {
+    border: 3px solid var(--accent-pale);
+    transition: border-color 0.25s var(--ease-out), box-shadow 0.25s;
 }
 
-.custom-file-input:focus {
-    background-color: var(--card-bg);
-    border-color: var(--accent-text);
-    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
+.rounded-circle:hover {
+    border-color: var(--accent-mid);
+    box-shadow: 0 0 0 5px rgba(196, 212, 246, 0.3);
 }
 
-/* Кастомный пастельный чекбокс */
-.custom-checkbox {
-    width: 18px;
-    height: 18px;
-    background-color: var(--bg-color);
-    border: 1px solid var(--accent-hover);
-    border-radius: 4px !important;
-    cursor: pointer;
-}
-
-.custom-checkbox:checked {
-    background-color: var(--accent-text);
-    border-color: var(--accent-text);
-}
-
-.custom-checkbox:focus {
-    box-shadow: 0 0 0 3px rgba(226, 234, 252, 0.5);
-    border-color: var(--accent-hover);
-}
-
-/* --- Шапка приложения (Header) --- */
-.header-navbar {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-pale) !important;
-}
-
-.header-logo {
-    color: var(--accent-text) !important;
-    font-size: 1.3rem;
-    letter-spacing: -0.5px;
-}
-
-/* --- Страница устройства (DevicePage) --- */
-.device-detail-section {
-    background-color: var(--bg-color);
-}
-
+/* ================================================================
+   DEVICE DETAIL PAGE
+================================================================ */
 .device-detail-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-pale) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-md);
 }
 
-/* Большой контейнер для фотографии девайса */
 .image-detail-container {
     background-color: var(--bg-color);
+    border-radius: var(--r-lg) !important;
     min-height: 300px;
     max-height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding: 1rem;
+    transition: background-color 0.3s var(--ease-out);
+}
+
+.image-detail-container:hover {
+    background-color: #eef3fc;
 }
 
 .device-detail-image {
     max-height: 100%;
     object-fit: contain;
-    mix-blend-mode: multiply; /* Убирает задний фон картинки, если он белый */
+    mix-blend-mode: multiply;
+    transition: transform 0.45s var(--ease-out);
+}
+
+.image-detail-container:hover .device-detail-image {
+    transform: scale(1.06);
 }
 
 .device-detail-title {
     color: var(--text-main);
+    font-size: 1.6rem;
+    font-weight: 700;
 }
 
-/* Пастельный бейдж категории */
 .category-badge {
     background-color: var(--accent-pale) !important;
     color: var(--accent-text) !important;
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    border-radius: var(--r-pill) !important;
+    transition:
+        background-color 0.25s var(--ease-out),
+        transform 0.2s var(--ease-out);
 }
 
-/* Контейнер таблицы технических параметров */
+.category-badge:hover {
+    background-color: var(--accent-mid) !important;
+    transform: translateY(-1px);
+}
+
 .device-info-grid {
     background-color: var(--bg-color);
     border: 1px solid var(--border-pale);
+    border-radius: var(--r-md) !important;
 }
 
 .device-info-grid .border-bottom {
@@ -345,26 +674,464 @@ body {
 }
 
 .info-label {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
 .info-value {
+    font-size: 0.9rem;
     color: var(--text-main);
-    font-size: 0.95rem;
+    font-weight: 600;
 }
 
+.specifications-grid .border-bottom {
+    border-bottom-color: var(--border-pale) !important;
+    transition: background-color 0.2s;
+}
+
+/* ================================================================
+   TABLE (RequestsPage)
+================================================================ */
+.table {
+    color: var(--text-main);
+}
+
+.table thead th {
+    background-color: var(--bg-color);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-pale) !important;
+    padding: 0.85rem 1rem;
+}
+
+.table-hover tbody tr {
+    transition: background-color 0.2s var(--ease-out);
+    border-bottom: 1px solid var(--border-pale);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f6ff;
+}
+
+.table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-pale);
+}
+
+/* Status badges */
+.badge {
+    font-size: 0.78rem;
+    font-weight: 500;
+    border-radius: var(--r-pill) !important;
+    padding: 0.35em 0.75em;
+}
+
+.badge.bg-warning {
+    background-color: var(--warning-pale) !important;
+    color: var(--warning-text) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--success-pale) !important;
+    color: var(--success-text) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--danger-pale) !important;
+    color: var(--danger-text) !important;
+}
+
+/* Small action buttons in table */
+.btn-outline-primary.btn-sm,
+.btn-success.btn-sm,
+.btn-danger.btn-sm,
+.btn-warning.btn-sm,
+.btn-outline-secondary.btn-sm {
+    border-radius: var(--r-sm) !important;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    transition:
+        transform 0.18s var(--ease-out),
+        box-shadow 0.2s var(--ease-out);
+}
+
+.btn-outline-primary.btn-sm:hover,
+.btn-success.btn-sm:hover,
+.btn-danger.btn-sm:hover,
+.btn-warning.btn-sm:hover,
+.btn-outline-secondary.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ================================================================
+   MODAL
+================================================================ */
+.position-fixed .card {
+    border-radius: var(--r-xl) !important;
+    border: 1px solid var(--border-pale) !important;
+    box-shadow: var(--shadow-xl);
+    max-width: 420px;
+    width: 90%;
+    animation: scaleIn 0.3s var(--ease-out) both;
+}
+
+/* ================================================================
+   TOAST
+================================================================ */
+.alert-success {
+    background-color: var(--success-pale);
+    border: none;
+    border-radius: var(--r-lg) !important;
+    color: var(--success-text);
+    box-shadow: var(--shadow-lg);
+    animation: slideDown 0.35s var(--ease-out) both;
+}
+
+/* ================================================================
+   CHAT — Full-screen layout
+================================================================ */
 .chat-container {
-    height: calc(100vh - 60px); /* Высота экрана минус header */
+    height: calc(100vh - 64px);
+    overflow: hidden;
+    display: flex;
 }
 
-.chat-messages {
-    flex: 1;
+/* Левая панель */
+.chat-container .col-3 {
+    height: 100%;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border-pale) !important;
     overflow-y: auto;
 }
 
+/* Правая часть */
+.chat-container > .col {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ТОЛЬКО эта область прокручивается */
+.chat-messages {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding: 20px;
+}
+
+/* Общий красивый скролл */
+.custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background-color: color-mix(
+        in oklab,
+        var(--scrollbar-thumb-color) 65%,
+        transparent
+    );
+
+    border-radius: 1000px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-color);
+}
+
+/* Поле ввода */
 .chat-input {
-    position: sticky;
-    bottom: 0;
-    background: white;
-    border-top: 1px solid #eee;
+    flex: 0 0 auto;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-pale);
+    padding: 0.75rem 1rem;
+    z-index: 10;
+}
+
+/* User bubble */
+.bg-primary.text-white {
+    background: linear-gradient(135deg, var(--accent-text) 0%, var(--accent-dark) 100%) !important;
+    border-radius: var(--r-lg) var(--r-lg) var(--r-sm) var(--r-lg) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+/* AI bubble */
+.bg-light {
+    background-color: var(--bg-color) !important;
+    border-radius: var(--r-lg) var(--r-lg) var(--r-lg) var(--r-sm) !important;
+    border: 1px solid var(--border-pale);
+}
+
+/* Chat delete button */
+.btn-sm.btn-danger.float-end {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0 0.3rem;
+    font-size: 1rem;
+    line-height: 1;
+    transition: color 0.2s var(--ease-out), transform 0.18s;
+}
+
+.btn-sm.btn-danger.float-end:hover {
+    color: var(--danger-text);
+    background: var(--danger-pale);
+    border-radius: var(--r-sm);
+    transform: scale(1.2);
+}
+
+/* ================================================================
+   SPINNER
+================================================================ */
+.spinner-border {
+    color: var(--accent-text) !important;
+    width: 2rem;
+    height: 2rem;
+}
+
+.spinner-grow {
+    background-color: var(--accent-text) !important;
+}
+
+/* ================================================================
+   PDF ICON
+================================================================ */
+.pdf-icon {
+    width: 45px;
+    height: 45px;
+    transition: transform 0.25s var(--ease-out), opacity 0.2s;
+}
+
+a:hover .pdf-icon {
+    transform: scale(1.15);
+    opacity: 0.85;
+}
+
+/* ================================================================
+   UTILITY OVERRIDES
+================================================================ */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.border-bottom {
+    border-bottom-color: var(--border-pale) !important;
+}
+
+.rounded-pill {
+    border-radius: var(--r-pill) !important;
+}
+
+.alert-light {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-pale);
+    border-radius: var(--r-md) !important;
+    color: var(--text-muted);
+}
+
+.alert-danger {
+    background-color: var(--danger-pale);
+    border: none;
+    border-radius: var(--r-md) !important;
+    color: var(--danger-text);
+}
+
+/* ================================================================
+   KEYFRAMES
+================================================================ */
+
+/* Shimmer for skeletons */
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Fade in + slide up */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scale in for modals */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Slide down for toasts */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) translateX(-50%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+}
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.4rem;
+    }
+
+    .device-detail-card {
+        padding: 1.5rem !important;
+    }
+
+    .chat-container .col-3 {
+        display: none;
+    }
+
+    .home-section,
+    .catalog-section,
+    .profile-section,
+    .add-device-section,
+    .device-detail-section {
+        min-height: calc(100vh - 56px);
+    }
+}
+
+
+.stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 3rem;
+}
+
+.stats-block {
+    flex: 0 0 auto;
+    width: 180px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+/* ФОРМАТИРОВАНИЕ ОТВЕТА МОДЕЛИ */
+.chat-bubble {
+    display: inline-block;
+    width: fit-content;
+    max-width: 85%;
+
+    padding: 14px 18px !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.chat-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Ответ ассистента — мягкий серый */
+.chat-bubble-assistant {
+    color: #4b5563;
+    background: rgba(220, 224, 230, 0.45);
+    border-color: rgba(255, 255, 255, 0.65);
+}
+
+/* Сообщение пользователя */
+.chat-bubble-user {
+    color: #ffffff;
+    background: rgba(120, 145, 190, 0.88);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Markdown внутри ответа */
+.chat-message-content p {
+    margin-bottom: 0.7rem;
+}
+
+.chat-message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-message-content ul,
+.chat-message-content ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.4rem;
+}
+
+.chat-message-content li {
+    margin-bottom: 0.25rem;
+}
+
+.chat-message-content strong {
+    font-weight: 700;
+}
+
+.chat-message-content h1,
+.chat-message-content h2,
+.chat-message-content h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.chat-message-row {
+    width: 100%;
+}
+
+.chat-message-row.user {
+    text-align: right;
+}
+
+.chat-message-row.assistant {
+    text-align: left;
 }

@@ -45,19 +45,12 @@ export default function CASCallback({ onLogin }) {
 
     if (status === "error") {
         return (
-            <div style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "100vh",
-                gap: "1rem",
-            }}>
-                <p style={{ color: "var(--bs-danger, red)", fontWeight: 500 }}>
+            <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 gap-3">
+                <p className="text-danger fw-semibold">
                     Ошибка CAS-авторизации. Токены не получены.
                 </p>
                 <button
-                    className="btn btn-custom rounded-3 px-4 py-2"
+                    className="btn btn-custom rounded-pill px-4 py-2"
                     onClick={() => navigate("/auth")}
                 >
                     Вернуться к входу
@@ -67,18 +60,11 @@ export default function CASCallback({ onLogin }) {
     }
 
     return (
-        <div style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            gap: "0.75rem",
-        }}>
-            <div className="spinner-border text-primary" role="status">
+        <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 gap-3">
+            <div className="spinner-border" role="status">
                 <span className="visually-hidden">Загрузка...</span>
             </div>
-            <p style={{ color: "var(--bs-secondary, #666)" }}>Вход через МГТУ CAS...</p>
+            <p className="text-muted">Вход через МГТУ CAS...</p>
         </div>
     );
 }

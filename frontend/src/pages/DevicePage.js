@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import {useParams, useNavigate, Link} from "react-router-dom";
 import { getDevice,addDeviceToCart  } from "../api";
 import { ReactComponent as PDFIcon } from '../assets/pdf.svg';
+import Toast from "../components/Toast";
+import LoginRequired from "../components/ai/LoginRequired";
 
 export default function DevicePage({ currentUser }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const [device, setDevice] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
         async function load() {
@@ -21,14 +25,21 @@ export default function DevicePage({ currentUser }) {
     }, [id]);
 
     async function addToCart() {
+        if (!currentUser) {
+            setShowLoginModal(true);
+            return;
+        }
+        if (device.quantity === 0) {
+            setToast({
+                message: "Устройства нет на складе"
+            });
+            return;
+        }
         try {
             await addDeviceToCart(device.id);
-
-            alert("Устройство добавлено в корзину");
+            setToast({ message: "Устройство добавлено в корзину" });
         }
-        catch(e){
-            alert("Ошибка");
-        }
+        catch(e){setToast({ message: "Ошибка при добавлении в корзину" });}
     }
 
     // загрузка
@@ -49,12 +60,12 @@ export default function DevicePage({ currentUser }) {
                     ← Назад в каталог
                 </button>
 
-                <div className="card device-detail-card border-0 p-4 p-md-5 rounded-4 shadow-sm">
+                <div className="card device-detail-card p-4 p-md-5">
                     <div className="row g-5">
                         {/* Левая колонка: Картинка и спецификации */}
                         <div className="col-12 col-md-5">
                             {/* Картинка - слева вверху */}
-                            <div className="image-detail-container rounded-4 p-3 mb-4">
+                            <div className="image-detail-container p-3 mb-4">
                                 <img
                                     src={device.image || "/placeholder.png"}
                                     alt={device.name}
@@ -66,7 +77,7 @@ export default function DevicePage({ currentUser }) {
                             <div className="specifications-grid">
                                 <h5 className="fw-bold mb-3">Технические параметры</h5>
                                 <div className="row g-2" style={{ fontSize: '0.8rem' }}>
-                                    {Object.entries(device.specifications).map(([key, value]) => (
+                                    {Object.entries(device.specifications || {}).map(([key, value]) => (
                                         <div key={key} className="col-12">
                                             <div className="d-flex justify-content-between border-bottom py-2 gap-3">
                                                 <span className="text-muted">{key}</span>
@@ -80,7 +91,7 @@ export default function DevicePage({ currentUser }) {
 
                         <div className="col-12 col-md-7">
                             <span
-                                className="badge category-badge rounded-pill px-3 py-2 mb-3"
+                                className="badge category-badge px-3 py-2 mb-3"
                                 style={{ cursor: "pointer" }}
                                 onClick={() => navigate(`/catalog`)}
                                 role="button"
@@ -88,10 +99,10 @@ export default function DevicePage({ currentUser }) {
                                 {device.category_name || "Микросхемы"}
                             </span>
 
-                            <h1 className="device-detail-title mb-3 fw-bold">{device.name}</h1>
+                            <h1 className="device-detail-title mb-3">{device.name}</h1>
                             <p className="device-detail-desc text-muted mb-4">{device.description}</p>
 
-                            <div className="device-info-grid mb-4 p-3 rounded-3">
+                            <div className="device-info-grid mb-4 p-3">
                                 {currentUser?.is_staff && (
                                     <div className="d-flex justify-content-between border-bottom py-2">
                                         <span className="info-label text-muted">Место хранения</span>
@@ -107,9 +118,9 @@ export default function DevicePage({ currentUser }) {
                                     href={device.documentation}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="btn btn-custom rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2"
+                                    className="d-inline-flex align-items-center"
                                 >
-                                    <PDFIcon className="pdf-icon"/>
+                                    <PDFIcon className="pdf-icon" style={{ width: 80, height: 80 }}/>
                                 </a>
                             )}
                             <div className="text-center mt-5">
@@ -123,6 +134,18 @@ export default function DevicePage({ currentUser }) {
                         </div>
                     </div>
                 </div>
+                {toast && (
+                    <Toast
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                )}
+                {showLoginModal && (
+                    <LoginRequired
+                        onClose={() => setShowLoginModal(false)}
+                        message="Чтобы добавить товар в корзину, необходимо войти в систему"
+                    />
+                )}
             </div>
         </section>
     );

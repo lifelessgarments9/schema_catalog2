@@ -67,7 +67,7 @@ function AuthPage({ onLogin }) {
 
     return (
         <div className="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5">
-            <div className="auth-card p-4 p-sm-5 rounded-4 shadow-sm position-relative">
+            <div className="auth-card p-4 p-sm-5 position-relative">
 
                 <button onClick={() => navigate("/")} className="btn btn-back btn-sm mb-4">
                     ← На главную
@@ -77,7 +77,7 @@ function AuthPage({ onLogin }) {
                 <div className="mb-4 text-center">
                     <button
                         onClick={handleCASLogin}
-                        className="btn btn-cas w-100 rounded-3 py-2 d-flex align-items-center justify-content-center gap-2"
+                        className="btn btn-cas w-100 py-2 d-flex align-items-center justify-content-center gap-2"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"/>
@@ -95,15 +95,15 @@ function AuthPage({ onLogin }) {
                 </div>
                 {/* ──────────────────────────────────────────────────────── */}
 
-                <div className="nav nav-pills auth-tabs mb-4 justify-content-center p-1 rounded-pill">
+                <div className="nav nav-pills auth-tabs mb-4 justify-content-center p-1">
                     <button
-                        className={`nav-link rounded-pill px-4 ${activeTab === "login" ? "active" : ""}`}
+                        className={`nav-link px-4 ${activeTab === "login" ? "active" : ""}`}
                         onClick={() => setActiveTab("login")}
                     >
                         Вход
                     </button>
                     <button
-                        className={`nav-link rounded-pill px-4 ${activeTab === "register" ? "active" : ""}`}
+                        className={`nav-link px-4 ${activeTab === "register" ? "active" : ""}`}
                         onClick={() => setActiveTab("register")}
                     >
                         Регистрация
@@ -115,7 +115,7 @@ function AuthPage({ onLogin }) {
                         <h2 className="auth-title text-center mb-4">Вход</h2>
                         <div className="mb-3">
                             <input
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Username"
                                 value={loginData.username}
                                 onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
@@ -124,13 +124,13 @@ function AuthPage({ onLogin }) {
                         <div className="mb-4">
                             <input
                                 type="password"
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Пароль"
                                 value={loginData.password}
                                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                             />
                         </div>
-                        <button onClick={handleLogin} className="btn btn-custom w-100 rounded-3 py-2">
+                        <button onClick={handleLogin} className="btn btn-custom w-100 py-2">
                             Войти
                         </button>
                     </div>
@@ -141,7 +141,7 @@ function AuthPage({ onLogin }) {
                         <h2 className="auth-title text-center mb-4">Регистрация</h2>
                         <div className="mb-3">
                             <input
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Username"
                                 value={registerData.username}
                                 onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
@@ -149,7 +149,7 @@ function AuthPage({ onLogin }) {
                         </div>
                         <div className="mb-3">
                             <input
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Email"
                                 value={registerData.email}
                                 onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
@@ -158,7 +158,7 @@ function AuthPage({ onLogin }) {
                         <div className="mb-3">
                             <input
                                 type="password"
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Пароль"
                                 value={registerData.password}
                                 onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
@@ -167,20 +167,20 @@ function AuthPage({ onLogin }) {
                         <div className="mb-4">
                             <input
                                 type="password"
-                                className="form-control custom-input rounded-3 px-3 py-2"
+                                className="form-control custom-input px-3 py-2"
                                 placeholder="Повторите пароль"
                                 value={registerData.password_confirm}
                                 onChange={(e) => setRegisterData({ ...registerData, password_confirm: e.target.value })}
                             />
                         </div>
-                        <button onClick={handleRegister} className="btn btn-custom w-100 rounded-3 py-2">
+                        <button onClick={handleRegister} className="btn btn-custom w-100 py-2">
                             Зарегистрироваться
                         </button>
                     </div>
                 )}
 
                 {(error || urlError) && (
-                    <div className="alert alert-danger custom-alert mt-4 mb-0 text-center rounded-3 small">
+                    <div className="alert alert-danger custom-alert mt-4 mb-0 text-center small">
                         {urlError ? (casErrorMessages[urlError] || `Ошибка: ${urlError}`) : error}
                     </div>
                 )}

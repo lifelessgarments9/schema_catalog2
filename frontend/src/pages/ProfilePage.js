@@ -15,7 +15,7 @@ export default function ProfilePage({ user, onLogout }) {
     if (!user) {
         return (
             <div className="d-flex justify-content-center align-items-center py-5 my-5">
-                <div className="spinner-border text-muted opacity-50" role="status">
+                <div className="spinner-border" role="status">
                     <span className="visually-hidden">Загрузка...</span>
                 </div>
             </div>
@@ -27,13 +27,13 @@ export default function ProfilePage({ user, onLogout }) {
             <div className="container">
                 <div className="row justify-content-center">
                     <div className="col-12 col-md-6 col-lg-4">
-                        <div className="card border-0 shadow-sm rounded-4 p-4 text-center">
+                        <div className="card p-4 text-center">
                             <div className="mb-4">
                                 {user.avatar ? (
                                     <img
                                         src={user.avatar}
                                         alt={user.username}
-                                        className="rounded-circle"
+                                        className="rounded-circle mx-auto"
                                         width="100"
                                         height="100"
                                         style={{ objectFit: "cover" }}

@@ -11,14 +11,39 @@ function authHeaders(json = false) {
 
 // ─── catalog ───────────────────────────────────────────────────────────────
 
-export async function getDevices(filters = {}) {
+export async function getDevices(filters = {},page = 1,pageSize = 8) {
     const params = new URLSearchParams();
-    Object.entries(filters).forEach(([k, v]) => {
-        if (v !== "" && v != null) params.append(k, v);
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (
+            value !== "" &&
+            value !== null &&
+            value !== undefined
+        ) {
+            params.append(key, value);
+        }
     });
-    const qs = params.toString();
-    const url = qs ? `${API}/catalog/devices/?${qs}` : `${API}/catalog/devices/`;
-    return fetch(url).then(r => r.json());
+
+    params.append("page", page);
+    params.append("page_size", pageSize);
+
+    const response = await fetch(
+        `${API}/catalog/devices/?${params.toString()}`
+    );
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+
+        const error = new Error(
+            data.detail || "Не удалось загрузить каталог"
+        );
+
+        error.status = response.status;
+
+        throw error;
+    }
+
+    return await response.json();
 }
 
 export async function getDevice(id) {
@@ -30,11 +55,16 @@ export async function getCategories() {
 }
 
 export async function addDevice(data) {
-    const response = await fetch(`${API}/catalog/`, {
+    const response = await fetch(`${API}/catalog/devices/`, {
         method: "POST",
         headers: authHeaders(),
         body: data,
     });
+    return response.json();
+}
+
+export async function getCatalogStats() {
+    const response = await fetch(`${API}/catalog/stats/`, {headers: authHeaders()});
     return response.json();
 }
 
@@ -84,8 +114,20 @@ export async function removeDeviceFromCart(deviceId) {
 
 // ─── rental requests ───────────────────────────────────────────────────────
 
-export async function getRentalRequests() {
-    return fetch(`${API}/rental/requests/`, { headers: authHeaders() }).then(r => r.json());
+export async function getRentalRequests(page = 1, pageSize = 10) {
+    const response = await fetch(`${API}/rental/requests/?page=${page}&page_size=${pageSize}`, {
+        headers: authHeaders()
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        const error = new Error(data.detail || "Ошибка загрузки заявок");
+        error.status = response.status;
+        throw error;
+    }
+
+    return data;
 }
 
 export async function getRentalRequest(id) {
@@ -141,6 +183,29 @@ export async function returnRentalRequest(id) {
     return data;
 }
 
+export async function getRentalRequestPdf(id) {
+    const response = await fetch(
+        `${API}/rental/requests/${id}/pdf/`,
+        {
+            headers: authHeaders()
+        }
+    );
+
+    if (!response.ok) {
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+
+        const error = new Error(data.detail || data.error || "Не удалось получить PDF");
+        error.status = response.status;
+        throw error;
+    }
+    return await response.blob();
+}
+
 
 //ai
 export async function getChats() {
@@ -169,12 +234,16 @@ export async function askAI(message, chatId = null) {
     const response = await fetch(`${API}/ai/chat/`, {
         method: "POST",
         headers: authHeaders(true),
-        body: JSON.stringify({
-            message,
-            chat_id: chatId
-        })
+        body: JSON.stringify(body)
     });
-    return response.json();
+
+    const data = await response.json();
+    if (!response.ok) {
+        const error = new Error(data.detail || "Request failed");
+        error.status = response.status;
+        throw error;
+    }
+    return data;
 }
 
 export async function deleteChat(id) {

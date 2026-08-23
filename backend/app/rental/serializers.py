@@ -4,11 +4,31 @@ from app.rental.models import RentalRequest, RentalRequestItem
 
 
 class RentalRequestItemSerializer(serializers.ModelSerializer):
-    device_name = serializers.CharField(source="device.name", read_only=True)
+    device_id = serializers.IntegerField(
+        source="device.id",
+        read_only=True
+    )
+
+    device_name = serializers.CharField(
+        source="device.name",
+        read_only=True
+    )
 
     class Meta:
         model = RentalRequestItem
-        fields = ["id", "device", "device_name", "quantity", "return_date"]
+        fields = [
+            "id",
+            "device",
+            "device_id",
+            "device_name",
+            "quantity",
+            "return_date",
+        ]
+        read_only_fields = [
+            "id",
+            "device_id",
+            "device_name",
+        ]
 
 
 class RentalRequestSerializer(serializers.ModelSerializer):
@@ -25,7 +45,6 @@ class RentalRequestSerializer(serializers.ModelSerializer):
             "status",
             "issue_date",
             "created_at",
-            "pdf",
             "items",
         ]
-        read_only_fields = ["id", "student", "status", "issue_date", "created_at", "pdf"]
+        read_only_fields = ["id", "student", "status", "issue_date", "created_at"]

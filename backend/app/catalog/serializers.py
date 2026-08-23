@@ -6,7 +6,7 @@ from app.catalog.models import Category, Device
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["id", "name"]
+        fields = ["id", "name","specification_template"]
 
 
 class DeviceSerializer(serializers.ModelSerializer):

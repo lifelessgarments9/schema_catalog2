@@ -21,7 +21,6 @@ class CatalogService:
         qs = Device.objects.select_related("category").all()
 
         if filters:
-            # search
             search=filters.pop("search",None)
             if search:
                 qs=qs.filter(
@@ -46,10 +45,9 @@ class CatalogService:
 
     @staticmethod
     def create(data: dict) -> Device:
-        category_id = data.pop("category", None)
+        category = data.pop("category")
         device = Device(**data)
-        if category_id:
-            device.category = Category.objects.get(pk=category_id)
+        device.category = category
         device.save()
         if device.documentation:
             CatalogService.store_doc_text(device)
