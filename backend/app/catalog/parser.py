@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class DocumentParser:
-    MAX_CHARS = 10000
+    MAX_CHARS = 5000
 
     @staticmethod
     def parse(file_path: str) -> str:

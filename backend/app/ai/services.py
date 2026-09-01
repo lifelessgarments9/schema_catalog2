@@ -36,12 +36,12 @@ class ChatService:
         user_message = ChatMessage.objects.create(chat=chat, role="user", content=message)
         chat.save()
 
-        analysis = QueryAnalyzer().analyze(message)
+        query_embedding = EmbeddingService.create(message)
+        analysis = QueryAnalyzer().analyze(query_embedding)
 
         print(f"analysis: {analysis}")
 
         if analysis["domain"] == "catalog":
-            query_embedding = EmbeddingService.create(message)
             scored_devices = DeviceSearcher().search(query_embedding)
             context = ContextBuilder().build(scored_devices)
         elif analysis["domain"] == "service":

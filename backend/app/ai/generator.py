@@ -5,7 +5,7 @@ from app.ai.prompts import GENERATOR_PROMPT
 
 
 class Generator:
-    MODEL = "qwen2.5:1.5b"
+    MODEL = "qwen2.5:7b-instruct"
 
     def generate(self, question: str, context: str) -> str:
 

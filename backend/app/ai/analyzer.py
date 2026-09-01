@@ -9,8 +9,7 @@ class QueryAnalyzer:
 
     THRESHOLD = 0.60
 
-    def analyze(self, question: str) -> dict:
-        query_embedding = EmbeddingService.create(question)
+    def analyze(self, query_embedding: list) -> dict:
         scores = defaultdict(list)
         for ref in ReferenceEmbedding.objects.all():
             similarity = cosine_similarity(query_embedding,ref.embedding,)
