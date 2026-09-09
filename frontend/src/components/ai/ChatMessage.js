@@ -34,12 +34,7 @@ export default function ChatMessage({ message }) {
                                         className="text-decoration-none"
                                     >
                                         <div className="badge category-badge p-2 d-flex align-items-center gap-1">
-                                            <DeviceIcon
-                                                style={{
-                                                    width: 40,
-                                                    height: 40
-                                                }}
-                                            />
+                                            <DeviceIcon style={{width: 40,height: 40}}/>
                                             <span>{device.name}</span>
                                         </div>
                                     </Link>

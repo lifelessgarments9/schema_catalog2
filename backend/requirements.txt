@@ -29,3 +29,7 @@ python-dotenv==1.2.2
 
 # Production
 #gunicorn==26.0.0
+
+# react-markdown
+# remark-gfm
+# ollama

@@ -24,6 +24,7 @@ export default function ChatSidebar({ chats, current, onDelete }) {
                         >
                             ×
                         </button>
+
                     </div>
                 </div>
             ))}

@@ -29,7 +29,7 @@ export default function DevicePage({ currentUser }) {
             setShowLoginModal(true);
             return;
         }
-        if (device.quantity === 0) {
+        if (device.quantity_storage === 0) {
             setToast({
                 message: "Устройства нет на складе"
             });
@@ -41,8 +41,6 @@ export default function DevicePage({ currentUser }) {
         }
         catch(e){setToast({ message: "Ошибка при добавлении в корзину" });}
     }
-
-    // загрузка
     if (!device) {
         return (
             <div className="d-flex justify-content-center align-items-center py-5 my-5">
@@ -93,7 +91,7 @@ export default function DevicePage({ currentUser }) {
                             <span
                                 className="badge category-badge px-3 py-2 mb-3"
                                 style={{ cursor: "pointer" }}
-                                onClick={() => navigate(`/catalog`)}
+                                onClick={() => navigate(`/catalog/devices/?category=${device.category}`)}
                                 role="button"
                             >
                                 {device.category_name || "Микросхемы"}
@@ -107,9 +105,18 @@ export default function DevicePage({ currentUser }) {
                                     <div className="d-flex justify-content-between border-bottom py-2">
                                         <span className="info-label text-muted">Место хранения</span>
                                         <span className="info-value fw-semibold">{device.manufacturer || "Не указан"}</span>
-                                    </div>)}
+                                    </div>)
+                                }
+                                <div className="d-flex justify-content-between border-bottom py-2">
+                                    <span className="info-label text-muted">На складе</span>
+                                    <span className="info-value fw-semibold text-success">{device.quantity_storage} шт.</span>
+                                </div>
+                                <div className="d-flex justify-content-between border-bottom py-2">
+                                    <span className="info-label text-muted">Выдано</span>
+                                    <span className="info-value fw-semibold text-warning">{device.quantity_rented} шт.</span>
+                                </div>
                                 <div className="d-flex justify-content-between py-2">
-                                    <span className="info-label text-muted">Количество на складе</span>
+                                    <span className="info-label text-muted">Всего</span>
                                     <span className="info-value fw-semibold">{device.quantity} шт.</span>
                                 </div>
                             </div>

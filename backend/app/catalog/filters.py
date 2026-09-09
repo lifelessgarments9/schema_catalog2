@@ -20,8 +20,8 @@ class DeviceFilter:
             flag = self.params["is_available"].lower() == "true"
             qs = qs.filter(is_available=flag)
 
-        min_qty=self.params.get("min_quantity")
-        if min_qty: qs = qs.filter(quantity__gte=int(min_qty))
+        min_qty=self.params.get("min_storage_quantity")
+        if min_qty: qs = qs.filter(quantity_storage__gte=int(min_qty))
 
         search = self.params.get("search")
         if search: qs = qs.filter(name__icontains=search) | qs.filter(description__icontains=search)

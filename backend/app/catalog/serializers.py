@@ -4,30 +4,29 @@ from app.catalog.models import Category, Device
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    specifications = serializers.SlugRelatedField(many=True,read_only=True,slug_field="name")
+
     class Meta:
         model = Category
-        fields = ["id", "name","specification_template"]
+        fields = ["id", "name", "specifications"]
 
 
 class DeviceSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
-    image = serializers.SerializerMethodField()
-    documentation = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False)
+    documentation = serializers.FileField(required=False)
 
     class Meta:
         model = Device
         fields = "__all__"
 
-    def get_image(self, obj):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
         request = self.context.get("request")
-        if obj.image:
-            return request.build_absolute_uri(obj.image.url)
 
-        return None
+        if instance.image and request:
+            data["image"] = request.build_absolute_uri(instance.image.url)
+        if instance.documentation and request:
+            data["documentation"] = request.build_absolute_uri(instance.documentation.url)
 
-    def get_documentation(self, obj):
-        request = self.context.get("request")
-        if obj.documentation:
-            return request.build_absolute_uri(obj.documentation.url)
-
-        return None
+        return data

@@ -11,6 +11,7 @@ export default function CartPage() {
     const [fullName, setFullName] = useState("");
     const [group, setGroup] = useState("");
     const [discipline, setDiscipline] = useState("");
+    const [returnDate, setReturnDate] = useState("");
     const [loading, setLoading]       = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError]           = useState("");
@@ -26,30 +27,16 @@ export default function CartPage() {
             if (!Array.isArray(data)) {
                 throw new Error("Некорректный формат данных корзины");
             }
-            setDevices(
-                data.map(d => ({
-                    ...d,
-                    quantity: 1,
-                    return_date: "",
-                }))
-            );
+            setDevices(data.map(d => ({...d,quantity: 1,})));
+
         } catch (error) {
             console.error("Ошибка загрузки корзины:", error);
             if (error.status === 401) {
-                setError({
-                    status: 401,
-                    message: "Для просмотра корзины необходимо авторизоваться."
-                });
+                setError({status: 401,message: "Для просмотра корзины необходимо авторизоваться."});
             } else if (error.status === 403) {
-                setError({
-                    status: 403,
-                    message: "У вас нет доступа к корзине."
-                });
+                setError({status: 403,message: "У вас нет доступа к корзине."});
             } else {
-                setError({
-                    status: 500,
-                    message: error.message || "Не удалось загрузить корзину."
-                });
+                setError({status: 500,message: error.message || "Не удалось загрузить корзину."});
             }
         } finally {
             setLoading(false);
@@ -71,17 +58,13 @@ export default function CartPage() {
 
     async function submit() {
         setError("");
-        if (!fullName.trim() || !group.trim() || !discipline.trim()) {
-            setError("Заполните ФИО, группу и дисциплину.");
+        if (!fullName.trim() || !group.trim() || !discipline.trim() || !returnDate) {
+            setToast({ message: "Заполните все обязательные поля." });
             return;
         }
         for (const d of devices) {
-            if (!d.return_date) {
-                setError(`Укажите дату возврата для «${d.name}».`);
-                return;
-            }
             if (d.quantity < 1) {
-                setError(`Количество для «${d.name}» должно быть не менее 1.`);
+                setToast({ message: `Количество для «${d.name}» должно быть не менее 1.` });
                 return;
             }
         }
@@ -95,13 +78,13 @@ export default function CartPage() {
                 items: devices.map(d => ({
                     device: d.id,
                     quantity: d.quantity,
-                    return_date: d.return_date,
+                    return_date: returnDate,
                 })),
             });
 
             if (result?.id) {
                 setToast({message: "Заявка успешно отправлена"});
-                navigate("/profile");
+                navigate("/");
             } else {
                 setError(result?.detail || result?.error || "Ошибка при отправке заявки.");
             }
@@ -150,10 +133,9 @@ export default function CartPage() {
                     <div className="mb-4">
                         {/* Шапка таблицы */}
                         <div className="row fw-semibold mb-2 px-3 d-none d-md-flex">
-                            <div className="col-md-4">Устройство</div>
+                            <div className="col-md-5">Устройство</div>
                             <div className="col-md-2">Кол-во</div>
-                            <div className="col-md-3">Дата возврата</div>
-                            <div className="col-md-3"></div>
+                            <div className="col-md-5"></div>
                         </div>
 
                         {devices.map((device, index) => (
@@ -171,20 +153,18 @@ export default function CartPage() {
                                         <input
                                             type="number"
                                             min="1"
-                                            max={device.quantity}
+                                            max={device.quantity_storage || 1}
                                             className="form-control"
                                             value={device.quantity}
-                                            onChange={e => update(index, "quantity", Number(e.target.value))}
-                                        />
-                                    </div>
-
-                                    <div className="col-md-3">
-                                        <input
-                                            type="date"
-                                            className="form-control"
-                                            value={device.return_date}
-                                            min={new Date().toISOString().split("T")[0]}
-                                            onChange={e => update(index, "return_date", e.target.value)}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if (val === "") {
+                                                    update(index, "quantity", "");
+                                                    return;
+                                                }
+                                                const num = Math.max(1, Math.min(Number(val), device.quantity_storage || 1));
+                                                update(index, "quantity", num);
+                                            }}
                                         />
                                     </div>
 
@@ -234,6 +214,16 @@ export default function CartPage() {
                             value={discipline}
                             placeholder="Схемотехника"
                             onChange={e => setDiscipline(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="form-label">Дата возврата *</label> {/* ← ИЗМЕНЕНО */}
+                        <input
+                            type="date"
+                            className="form-control"
+                            value={returnDate}
+                            min={new Date().toISOString().split("T")[0]}
+                            onChange={e => setReturnDate(e.target.value)}
                         />
                     </div>
 

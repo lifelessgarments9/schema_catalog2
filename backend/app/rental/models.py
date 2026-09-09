@@ -11,7 +11,8 @@ class RentalRequest(models.Model):
         ("pending",  "Ожидает"),
         ("approved", "Подтверждена"),
         ("rejected", "Отклонена"),
-        ("returned", "Возвращена")
+        ("returned", "Возвращена"),
+        ("hidden", "Скрыта"),
     ]
 
     student    = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
@@ -24,7 +25,6 @@ class RentalRequest(models.Model):
 
     def __str__(self):
         return f"#{self.pk} {self.full_name} [{self.status}]"
-
 
 class RentalRequestItem(models.Model):
     request     = models.ForeignKey(RentalRequest, on_delete=models.CASCADE, related_name="items")

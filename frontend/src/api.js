@@ -57,7 +57,7 @@ export async function getCategories() {
 export async function addDevice(data) {
     const response = await fetch(`${API}/catalog/devices/`, {
         method: "POST",
-        headers: authHeaders(),
+        headers: {Authorization: `Bearer ${localStorage.getItem("access")}`,},
         body: data,
     });
     return response.json();
@@ -228,6 +228,7 @@ export async function getChat(id) {
     }).then(r => r.json());
 }
 
+
 export async function askAI(message, chatId = null) {
     const body = { message };
     if (chatId) body.chat_id = chatId;
@@ -248,6 +249,13 @@ export async function askAI(message, chatId = null) {
 
 export async function deleteChat(id) {
     await fetch(`${API}/ai/chats/${id}/`, {
+        method: "DELETE",
+        headers: authHeaders()
+    });
+}
+
+export async function deleteMessage(id) {
+    await fetch(`${API}/ai/messages/${id}/`, {
         method: "DELETE",
         headers: authHeaders()
     });

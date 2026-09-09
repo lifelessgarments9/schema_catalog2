@@ -38,25 +38,11 @@ export default function CatalogPage() {
         setDevices(null);
 
         try {
-            const data = await getDevices(
-                {
-                    search,
-                    category,
-                    is_available: isAvailable
-                },
-                page,
-                PAGE_SIZE
-            );
+            const data = await getDevices({search,category,is_available: isAvailable},page,PAGE_SIZE);
             console.log("COUNT:", data.count, "TOTAL PAGES:", Math.ceil(data.count / PAGE_SIZE));
 
             setDevices(data.results || []);
-
-            setTotalPages(
-                Math.max(
-                    1,
-                    Math.ceil((data.count || 0) / PAGE_SIZE)
-                )
-            );
+            setTotalPages(Math.max(1,Math.ceil((data.count || 0) / PAGE_SIZE)));
 
         } catch (error) {
             console.error("Ошибка загрузки каталога:", error);

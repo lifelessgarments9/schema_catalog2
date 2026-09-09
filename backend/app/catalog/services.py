@@ -21,11 +21,13 @@ class CatalogService:
         qs = Device.objects.select_related("category").all()
 
         if filters:
+            filters = filters.copy()
             search=filters.pop("search",None)
             if search:
                 qs=qs.filter(
                     Q(name__icontains=search)|
-                    Q(description__icontains=search)
+                    Q(description__icontains=search)|
+                    Q(specifications__icontains=search)
                 )
             #filters
             qs = DeviceFilter(qs, filters).apply()

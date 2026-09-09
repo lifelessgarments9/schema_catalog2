@@ -57,3 +57,13 @@ class ChatDetailView(APIView):
     def delete(self, request, pk):
         ChatService().delete_chat(request.user, pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ChatMessageDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            ChatService.delete_message(request.user, pk)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ChatService.MessageNotFound:
+            return Response({"detail": "Сообщение не найдено"}, status=404)

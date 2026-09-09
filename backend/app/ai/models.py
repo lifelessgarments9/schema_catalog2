@@ -42,9 +42,6 @@ class ChatMessage(models.Model):
     class Meta:
         ordering = ["created_at"]
 
-
-
-
 class ReferenceEmbedding(models.Model):
 
     DOMAIN_CHOICES = [

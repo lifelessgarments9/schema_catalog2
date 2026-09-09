@@ -60,10 +60,10 @@ export default function RequestsPage() {
         }
     }
 
-    async function approve(id) {
+    async function approve(id) { //!!!!
         try {
             const rental = await approveRentalRequest(id);
-            await load();
+            setRequests(prev => prev.map(request => request.id === id ? rental : request));
         } catch (error) {
             console.error("Ошибка подтверждения заявки:", error);
             setToast({message: error.message || "Не удалось подтвердить заявку."});
@@ -73,7 +73,7 @@ export default function RequestsPage() {
     async function remove(requestId) {
         setModal({
             title: "Удалить заявку?",
-            message: "Заявка будет удалена безвозвратно.",
+            message: "Заявка будет скрыта.",
             confirmText: "Удалить",
             onConfirm: async () => {
                 await deleteRentalRequest(requestId);
@@ -84,7 +84,7 @@ export default function RequestsPage() {
         });
     }
 
-    async function returnDevices(requestId) {
+    async function returnDevices(requestId) { //!!!!
         const request = requests.find(r => r.id === requestId);
         if (request.status !== "approved") {
             setToast({
@@ -99,7 +99,7 @@ export default function RequestsPage() {
             confirmText: "Вернуть",
             onConfirm: async () => {
                 const rental = await returnRentalRequest(requestId);
-                await load();
+                setRequests(prev => prev.map(request => request.id === requestId ? rental : request));
                 setModal(null);
             },
         });
@@ -168,10 +168,12 @@ export default function RequestsPage() {
                                         <div className="d-flex flex-wrap gap-2">
                                             {request.items.map(item => (
                                                 <Link key={item.id} to={`/device/${item.device_id}`} className="text-decoration-none">
-                                                    <div className="badge category-badge p-2 d-flex align-items-center gap-1">
+                                                    <div className="badge category-badge p-2 d-flex align-items-center gap-2">
                                                         <DeviceIcon style={{ width: 40, height: 40 }} />
                                                         <span>{item.device_name}</span>
-                                                        <span className="ms-1 text-muted" style={{ fontSize: '0.75rem' }}>×{item.quantity}</span>
+                                                        <span className="badge bg-secondary ms-auto" style={{ fontSize: '0.9rem' }}>
+                                                            ×{item.quantity}
+                                                        </span>
                                                     </div>
                                                 </Link>
                                             ))}

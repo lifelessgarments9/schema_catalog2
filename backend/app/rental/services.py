@@ -8,7 +8,7 @@ class RentalRequestService:
 
     @staticmethod
     def get_requests(user):
-        qs = RentalRequest.objects.prefetch_related("items", "items__device").order_by("-created_at")
+        qs = RentalRequest.objects.prefetch_related("items", "items__device").exclude(status="hidden").order_by("-created_at")
         return qs.all() if user.is_staff else qs.filter(student=user)
 
     @staticmethod
@@ -38,60 +38,41 @@ class RentalRequestService:
     @staticmethod
     @transaction.atomic
     def approve(request_id):
-        rental = (
-            RentalRequest.objects
-            .prefetch_related("items")
-            .get(pk=request_id)
-        )
+        rental = (RentalRequest.objects.prefetch_related("items", "items__device").get(pk=request_id))
+        if rental.status != "pending":raise ValueError("Заявка уже обработана.")
 
-        if rental.status != "pending":
-            raise ValueError("Заявка уже обработана.")
-
-        device_ids = [
-            item.device_id
-            for item in rental.items.all()
-        ]
+        items = list(rental.items.all())
+        device_ids = [item.device_id for item in items]
 
         devices = {
             device.id: device
             for device in Device.objects
             .select_for_update()
             .filter(id__in=device_ids)
+            .order_by("id")
         }
         #проверка
-        for item in rental.items.all():
+        for item in items:
             device = devices[item.device_id]
-
-            if device.quantity < item.quantity:
+            if device.quantity_storage < item.quantity:
                 raise ValueError(
                     f"Недостаточно «{device.name}» на складе. "
-                    f"Доступно: {device.quantity}, "
+                    f"Доступно: {device.quantity_storage}, "
                     f"требуется: {item.quantity}."
                 )
 
         # всё хватает — списываем
-        for item in rental.items.all():
+        for item in items:
             device = devices[item.device_id]
+            device.quantity_storage -= item.quantity
+            device.quantity_rented += item.quantity
+            device.is_available = device.quantity_storage > 0
 
-            device.quantity -= item.quantity
-            device.is_available = device.quantity > 0
-
-            device.save(
-                update_fields=[
-                    "quantity",
-                    "is_available"
-                ]
-            )
-
+        Device.objects.bulk_update(devices.values(), ["quantity_storage", "quantity_rented", "is_available"])
         rental.status = "approved"
         rental.issue_date = date.today()
 
-        rental.save(
-            update_fields=[
-                "status",
-                "issue_date"
-            ]
-        )
+        rental.save(update_fields=["status", "issue_date"])
         return rental
 
     @staticmethod
@@ -100,27 +81,35 @@ class RentalRequestService:
         rental = RentalRequest.objects.get(pk=request_id)
 
         if rental.status != "pending":
-            raise ValueError(
-                "Можно удалить только заявку, ожидающую подтверждения."
-            )
+            raise ValueError("Можно скрыть только заявку, ожидающую подтверждения.")
 
-        rental.delete()
+        rental.status = "hidden"
+        rental.save(update_fields=["status"])
 
     @staticmethod
     @transaction.atomic
     def return_devices(request_id):
-        rental = RentalRequest.objects.prefetch_related(
-            "items",
-            "items__device"
-        ).get(pk=request_id)
-        if rental.status != "approved":
-            raise ValueError("Вернуть можно только подтвержденную заявку.")
-        for item in rental.items.all():
-            device = item.device
-            device.quantity += item.quantity
-            device.is_available = True
-            device.save(update_fields=["quantity", "is_available"])
+        rental = RentalRequest.objects.prefetch_related("items","items__device").get(pk=request_id)
+        if rental.status != "approved": raise ValueError("Вернуть можно только подтвержденную заявку.")
 
+        items=list(rental.items.all())
+        device_ids=[i.device_id for i in items]
+
+        devices = {
+            device.id: device
+            for device in Device.objects
+            .select_for_update()
+            .filter(id__in=device_ids)
+            .order_by("id")
+        }
+
+        for item in items:
+            device = devices[item.device_id]
+            device.quantity_storage += item.quantity
+            device.quantity_rented -= item.quantity
+            device.is_available = True
+
+        Device.objects.bulk_update(devices.values(), ["quantity_storage", "quantity_rented", "is_available"])
         rental.status = "returned"
         rental.save(update_fields=["status"])
         return rental

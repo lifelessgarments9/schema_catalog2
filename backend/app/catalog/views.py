@@ -103,7 +103,7 @@ class CatalogStatsView(APIView):
     def get(self, request):
         total = Device.objects.aggregate(total=Sum("quantity"))["total"] or 0
 
-        available = Device.objects.filter(is_available=True,quantity__gt=0).count()
+        available = Device.objects.aggregate(available=Sum("quantity_storage"))["available"] or 0
 
         categories = Category.objects.count()
 

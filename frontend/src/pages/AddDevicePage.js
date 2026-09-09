@@ -43,7 +43,8 @@ export default function AddDevicePage() {
         );
 
         if (category) {
-            setSpecifications(Object.fromEntries(category.specification_template.map(key => [key, ""])));
+            const keys = category.specifications || [];
+            setSpecifications(Object.fromEntries(keys.map(key => [key, ""])));
         } else {
             setSpecifications({});
         }
@@ -65,7 +66,7 @@ export default function AddDevicePage() {
         data.append("name", form.name);
         data.append("description", form.description);
         data.append("manufacturer", form.manufacturer);
-        data.append("quantity", form.quantity);
+        data.append("quantity_storage", form.quantity);
         data.append("is_available", form.is_available);
         data.append("category", form.category);
 
@@ -96,7 +97,7 @@ export default function AddDevicePage() {
     );
 
     const specificationKeys = selectedCategory
-        ? selectedCategory.specification_template
+        ? selectedCategory.specifications
         : [];
 
     return (

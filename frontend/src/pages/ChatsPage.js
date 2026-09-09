@@ -1,11 +1,12 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 
 import {
     getChats,
     getChat,
     askAI,
-    deleteChat
+    deleteChat,
+    deleteMessage
 } from "../api";
 
 import ChatSidebar from "../components/ai/ChatSidebar";
@@ -29,6 +30,8 @@ export default function ChatsPage({ currentUser }) {
     const [modal, setModal] = useState(null);
     const [toast, setToast] = useState(null);
 
+    const chatMessagesRef = useRef(null);
+
     useEffect(() => {
         if (currentUser)
             loadChats();
@@ -39,31 +42,50 @@ export default function ChatsPage({ currentUser }) {
         if (id) loadMessages();
         else setMessages([]);
     }, [id, currentUser]);
+
     useEffect(() => {
-        if (id) return;
-        const message = sessionStorage.getItem("ai_waiting");
-        if (message) {
-            setWaitingMessage(message);
-            setLoading(true);
+        if (!id) {
+            const message = sessionStorage.getItem("ai_waiting_new");
+            if (message) {
+                setWaitingMessage(message);
+                setLoading(true);
+            } else {
+                setWaitingMessage("");
+            }
+            return;
         }
+        setWaitingMessage("");
     }, [id]);
+
+    useEffect(() => {
+        const container = chatMessagesRef.current;
+        if (!container) {
+            return;
+        }
+        container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth"
+        });
+    }, [messages, loading, waitingMessage]);
 
     async function loadChats(){
         setChats(await getChats());
     }
 
     async function loadMessages() {
-        const data = await getChat(id);
-
-        if (!Array.isArray(data)) {
-            console.error("Ошибка загрузки сообщений:", data);
+        try {
+            const data = await getChat(id);
+            if (!Array.isArray(data)) {
+                console.error("Ошибка загрузки сообщений:", data);
+                setMessages([]);
+                setLoading(false);
+                return;
+            }
+            setMessages(data);
+        } catch (error) {
+            console.error("Ошибка загрузки сообщений:", error);
             setMessages([]);
-            setLoading(false);
-            return;
         }
-
-        setMessages(data);
-        setLoading(data.at(-1)?.role === "user");
     }
 
     async function send(message) {
@@ -71,42 +93,59 @@ export default function ChatsPage({ currentUser }) {
             setShowLogin(true);
             return;
         }
+        if (loading) return;
         setLoading(true);
         if (!id) {
             setWaitingMessage(message);
-            sessionStorage.setItem("ai_waiting", message);
+            sessionStorage.setItem("ai_waiting_new", message);
         } else {
-            setMessages(prev => [
-                ...prev,
-                {
-                    id: Date.now(),
-                    role: "user",
-                    content: message
-                }
-            ]);
+            setMessages(prev => [...prev, {id: `temp-${Date.now()}`, role: "user", content: message,temporary: true}]);
+
         }
         try {
             const result = await askAI(message, id);
-            sessionStorage.removeItem("ai_waiting");
             if (!id) {
+                sessionStorage.removeItem("ai_waiting_new");
+                setWaitingMessage("");
                 await loadChats();
                 navigate(`/chats/${result.chat_id}`, { replace: true });
                 return;
             }
-
             setMessages(prev => [
-                ...prev,
-                result.messages[1]
+                ...prev.filter(message => !message.temporary),
+                ...result.messages
             ]);
         } catch (error) {
-            sessionStorage.removeItem("ai_waiting");
-            if (error.status === 429) {
+            if(!id){
+                sessionStorage.removeItem("ai_waiting_new");
                 setWaitingMessage("");
-                setToast({message: "Лимит запросов на сегодня исчерпан"});
+            }
+            else {
+                setMessages(prev =>
+                    prev.filter(message => !message.temporary)
+                );
+            }
+            if (id && error.messageId) {
+                try {
+                    await deleteMessage(error.messageId);
+                } catch (deleteError) {
+                    console.error(
+                        "Не удалось удалить сообщение:",
+                        deleteError
+                    );
+                }
+            }
+
+            if (error.status === 429) {
+                setToast({
+                    message: "Лимит запросов на сегодня исчерпан"
+                });
                 return;
             }
             console.error(error);
-            setToast({message: "Не удалось отправить сообщение."});
+            setToast({
+                message: "Не удалось получить ответ от ИИ."
+            });
         } finally {
             setLoading(false);
         }
@@ -133,7 +172,7 @@ export default function ChatsPage({ currentUser }) {
                     current={id}
                     onDelete={remove}/>
                 <div className="col">
-                    <div className="chat-messages custom-scroll">
+                    <div className="chat-messages custom-scroll" ref={chatMessagesRef}>
                         {id ? <ChatWindow messages={messages} loading={loading}/>
                             : <EmptyChat loading={loading} message={waitingMessage}/>}
                     </div>
