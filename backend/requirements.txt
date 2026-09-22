@@ -14,6 +14,9 @@ django-cas-ng==5.0.1
 # AI — Ollama
 ollama>=0.6.0
 
+# AI — OpenAI
+openai>=1.0.0
+
 # PDF Generation
 reportlab>=4.0
 
@@ -28,8 +31,7 @@ pypdf==6.14.2
 python-dotenv==1.2.2
 
 # Production
-#gunicorn==26.0.0
+gunicorn==26.2.0
 
 # react-markdown
 # remark-gfm
-# ollama

@@ -94,32 +94,55 @@ export default function DevicePage({ currentUser }) {
                                 onClick={() => navigate(`/catalog/devices/?category=${device.category}`)}
                                 role="button"
                             >
-                                {device.category_name || "Микросхемы"}
+                                {device.category_name || "Микроконтроллер"}
                             </span>
 
                             <h1 className="device-detail-title mb-3">{device.name}</h1>
                             <p className="device-detail-desc text-muted mb-4">{device.description}</p>
 
-                            <div className="device-info-grid mb-4 p-3">
-                                {currentUser?.is_staff && (
-                                    <div className="d-flex justify-content-between border-bottom py-2">
-                                        <span className="info-label text-muted">Место хранения</span>
-                                        <span className="info-value fw-semibold">{device.manufacturer || "Не указан"}</span>
-                                    </div>)
-                                }
-                                <div className="d-flex justify-content-between border-bottom py-2">
-                                    <span className="info-label text-muted">На складе</span>
-                                    <span className="info-value fw-semibold text-success">{device.quantity_storage} шт.</span>
-                                </div>
-                                <div className="d-flex justify-content-between border-bottom py-2">
-                                    <span className="info-label text-muted">Выдано</span>
-                                    <span className="info-value fw-semibold text-warning">{device.quantity_rented} шт.</span>
-                                </div>
-                                <div className="d-flex justify-content-between py-2">
-                                    <span className="info-label text-muted">Всего</span>
-                                    <span className="info-value fw-semibold">{device.quantity} шт.</span>
-                                </div>
-                            </div>
+                            {currentUser?.is_staff && (
+                                <>
+                                    <div className="mb-3">
+                                        <div className="d-flex justify-content-between border-bottom py-2">
+                                            <span className="info-label text-muted">Место хранения</span>
+                                            <span className="info-value fw-semibold">
+                                                {device.manufacturer || "Не указано"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="quantity-block rounded-4 border overflow-hidden" style={{ maxWidth: "300px" }}>
+                                        <div className="row g-0 text-center">
+                                            <div className="col-4 py-2 border-end">
+                                                <span className="text-muted small">На складе</span>
+                                            </div>
+                                            <div className="col-4 py-2 border-end">
+                                                <span className="text-muted small">Выдано</span>
+                                            </div>
+                                            <div className="col-4 py-2">
+                                                <span className="text-muted small">Всего</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="row g-0 text-center border-top">
+                                            <div className="col-4 py-3 border-end">
+                                                <span className="fw-semibold text-success">
+                                                    {device.quantity_storage} шт.
+                                                </span>
+                                            </div>
+                                            <div className="col-4 py-3 border-end">
+                                                <span className="fw-semibold text-warning">
+                                                    {device.quantity_rented} шт.
+                                                </span>
+                                            </div>
+                                            <div className="col-4 py-3">
+                                                <span className="fw-semibold">
+                                                    {device.quantity} шт.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             {device.documentation && (
                                 <a
                                     href={device.documentation}

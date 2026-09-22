@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import DeviceCard from "../components/DeviceCard";
 import { getCategories, getDevices } from "../api";
 
 export default function CatalogPage() {
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const PAGE_SIZE = 8;
 
+    const page = Number(searchParams.get("page")) || 1;
+    const category = searchParams.get("category") || "";
+    const isAvailable = searchParams.get("is_available") !== "false";
+
     const [devices, setDevices] = useState(null);
-    const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("");
-    const [isAvailable, setIsAvailable] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
     const [allCategories, setAllCategories] = useState([]);
-    const navigate = useNavigate();
+
+    const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
 
     const getRandomPaleColor = () => {
         const r = Math.floor(Math.random() * 55) + 200;
@@ -28,7 +31,7 @@ export default function CatalogPage() {
 
     useEffect(() => {
         load();
-    }, [page]);
+    }, [searchParams]);
 
     useEffect(() => {
         loadAllCategories();
@@ -36,14 +39,11 @@ export default function CatalogPage() {
 
     async function load() {
         setDevices(null);
-
+        const search = searchParams.get("search") || "";
         try {
-            const data = await getDevices({search,category,is_available: isAvailable},page,PAGE_SIZE);
-            console.log("COUNT:", data.count, "TOTAL PAGES:", Math.ceil(data.count / PAGE_SIZE));
-
+            const data = await getDevices({ search, category, is_available: isAvailable }, page, PAGE_SIZE);
             setDevices(data.results || []);
-            setTotalPages(Math.max(1,Math.ceil((data.count || 0) / PAGE_SIZE)));
-
+            setTotalPages(Math.max(1, Math.ceil((data.count || 0) / PAGE_SIZE)));
         } catch (error) {
             console.error("Ошибка загрузки каталога:", error);
             setDevices([]);
@@ -54,9 +54,26 @@ export default function CatalogPage() {
         setAllCategories(await getCategories());
     }
 
-    function applyFilters() {
-        if (page === 1) {load();}
-        else {setPage(1);}
+    function updateParams(changes) {
+        const next = new URLSearchParams(searchParams);
+        Object.entries(changes).forEach(([key, value]) => {
+            if (value === "" || value === null || value === undefined) next.delete(key);
+            else next.set(key, value);
+        });
+        if (!("page" in changes)) next.set("page", "1");
+        setSearchParams(next);
+    }
+
+    function handleCategoryChange(e) {
+        updateParams({ category: e.target.value === "" ? "" : Number(e.target.value) });
+    }
+
+    function handleAvailableChange(e) {
+        updateParams({ is_available: e.target.checked ? "" : "false" });
+    }
+
+    function commitSearch() {
+        updateParams({ search: searchInput });
     }
 
     const renderContent = () => {
@@ -66,10 +83,7 @@ export default function CatalogPage() {
                     {Array.from({ length: 8 }).map((_, index) => (
                         <div key={index} className="col-12 col-sm-6 col-md-4 col-lg-3">
                             <div className="card device-card h-100 p-3 text-center skeleton-card">
-                                <div
-                                    className="image-container mb-3 skeleton-block structural-img"
-                                    style={{ backgroundColor: colors[index] }}
-                                />
+                                <div className="image-container mb-3 skeleton-block structural-img" style={{ backgroundColor: colors[index] }} />
                                 <div className="card-body d-flex flex-column p-0 align-items-center">
                                     <div className="skeleton-block structural-title mb-2" />
                                     <div className="skeleton-block structural-text mb-1 w-100" />
@@ -82,7 +96,6 @@ export default function CatalogPage() {
                 </div>
             );
         }
-
         if (devices.length === 0) {
             return (
                 <div className="text-center py-5">
@@ -90,7 +103,6 @@ export default function CatalogPage() {
                 </div>
             );
         }
-
         return (
             <div className="row g-4">
                 {devices.map(device => (
@@ -119,20 +131,10 @@ export default function CatalogPage() {
                             <h5 className="mb-3 fw-bold">Фильтры</h5>
                             <div className="mb-3">
                                 <label className="form-label custom-form-label">Категория</label>
-                                <select
-                                    className="form-select"
-                                    value={category}
-                                    onChange={(e) =>
-                                        setCategory(
-                                            e.target.value === "" ? "" : Number(e.target.value)
-                                        )
-                                    }
-                                >
+                                <select className="form-select" value={category} onChange={handleCategoryChange}>
                                     <option value="">Все категории</option>
                                     {allCategories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -140,20 +142,14 @@ export default function CatalogPage() {
                                 <input
                                     className="form-check-input custom-checkbox m-0"
                                     type="checkbox"
-                                    checked={isAvailable === true}
-                                    onChange={(e) => setIsAvailable(e.target.checked)}
+                                    checked={isAvailable}
+                                    onChange={handleAvailableChange} // CHANGED
                                     id="available"
                                 />
                                 <label className="form-check-label custom-form-label user-select-none" htmlFor="available">
                                     В наличии
                                 </label>
                             </div>
-                            <button
-                                className="btn btn-custom w-100"
-                                onClick={applyFilters}
-                            >
-                                Применить
-                            </button>
                         </div>
                     </div>
                     <div className="col-md-9">
@@ -161,18 +157,11 @@ export default function CatalogPage() {
                             <input
                                 className="form-control custom-input rounded-start-pill px-4 py-2"
                                 placeholder="Поиск..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                        applyFilters();
-                                    }
-                                }}
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") commitSearch(); }}
                             />
-                            <button
-                                className="btn btn-custom rounded-end-pill px-4"
-                                onClick={applyFilters}
-                            >
+                            <button className="btn btn-custom rounded-end-pill px-4" onClick={commitSearch}>
                                 Найти
                             </button>
                         </div>
@@ -185,24 +174,17 @@ export default function CatalogPage() {
                         <ul className="pagination">
                             {page > 1 && (
                                 <li className="page-item">
-                                    <button className="page-link" onClick={() => setPage(p => p - 1)}>
-                                        ←
-                                    </button>
+                                    <button className="page-link" onClick={() => updateParams({ page: page - 1 })}>←</button>
                                 </li>
                             )}
                             <li className="page-item active">
-                                <span className="page-link">
-                                    {page} / {totalPages}
-                                </span>
+                                <span className="page-link">{page} / {totalPages}</span>
                             </li>
                             {page < totalPages && (
                                 <li className="page-item">
-                                    <button className="page-link" onClick={() => setPage(p => p + 1)}>
-                                        →
-                                    </button>
+                                    <button className="page-link" onClick={() => updateParams({ page: page + 1 })}>→</button>
                                 </li>
                             )}
-
                         </ul>
                     </nav>
                 )}

@@ -33,8 +33,8 @@ class ChatService:
         if len(message) > 30: title += "..."
         chat = self.get_or_create_chat(user, chat_id, title=title)
 
-        history = (ChatMessage.objects.filter(chat=chat).order_by("-created_at")[:10])
-        history = list(reversed(history))
+        history = (ChatMessage.objects.filter(chat=chat).order_by("-created_at")[:1])
+        #history = list(reversed(history))
         messages = [{"role": "user" if msg.role == "user" else "assistant","content": msg.content,} for msg in history]
 
         user_message = ChatMessage.objects.create(chat=chat, role="user", content=message)

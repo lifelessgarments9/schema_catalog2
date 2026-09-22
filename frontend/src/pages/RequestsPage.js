@@ -203,15 +203,6 @@ export default function RequestsPage() {
                                         }
                                     </td>
                                     <td className="text-end text-nowrap">
-
-                                        <button
-                                            className="btn btn-outline-primary btn-sm me-2"
-                                            onClick={() =>
-                                                navigate(`/requests/${request.id}`)
-                                            }
-                                        >
-                                            Подробнее
-                                        </button>
                                         {request.status === "pending" && (
                                             <>
                                                 <button

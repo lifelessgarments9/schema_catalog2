@@ -12,10 +12,18 @@ class TextCleaner:
     DASH_LINE_PATTERN = re.compile(r"^\s*[-—_]{3,}\s*$")
     TOC_ENTRY_PATTERN = re.compile(r"^\d+.*\d+\s*$")
 
+    WINDOWS_NEWLINE = re.compile(r"\r\n?")
+    MULTIPLE_NEWLINES = re.compile(r"\n{3,}")
+    TRAILING_WHITESPACE = re.compile(r"[ \t]+$", re.MULTILINE)
+
     @classmethod
     def clean(cls, text: str) -> str:
         if not text:
             return ""
+
+        text = cls.WINDOWS_NEWLINE.sub("\n", text)
+        text = cls.TRAILING_WHITESPACE.sub("", text)
+        text = cls.MULTIPLE_NEWLINES.sub("\n\n", text)
 
         lines = text.splitlines()
         cleaned = []

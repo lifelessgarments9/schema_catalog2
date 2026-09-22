@@ -1,38 +1,44 @@
-
-import ollama
+from openai import OpenAI
+from django.conf import settings
 
 from app.ai.prompts import GENERATOR_PROMPT
 
 
 class Generator:
-    MODEL = "qwen2.5:1.5b"
+    def __init__(self):
+        self.client = OpenAI(api_key=settings.AI_API_KEY,base_url=settings.AI_BASE_URL,)
 
     def generate(self, question: str, context: str, history: list) -> str:
-        history_text="\n".join(f"{'Пользователь' if m['role']=='user' else 'Ассистент'}:{m['content']}" for m in history)
+        messages = [
+            {"role": "system","content": GENERATOR_PROMPT,}
+        ]
 
-        user_content = (
-            f"Контекст об оборудовании:\n{context}\n\n"
-            f"История диалога:\n{history_text}\n\n"
-            f"Вопрос пользователя:\n{question}"
+        messages.extend(
+            {
+                "role": message["role"],
+                "content": message["content"],
+            }
+            for message in history
+        )
+        messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Контекст об оборудовании:\n{context}\n\n"
+                    f"Вопрос пользователя:\n{question}"
+                ),
+            }
         )
 
-        print(f"Запрос: model={self.MODEL}, {user_content}")
-
-        response = ollama.chat(
-            model=self.MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": GENERATOR_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": user_content
-                },
-            ],
-            options={
-                "temperature": 0.3,
-            },
+        print(
+            f"Запрос: model={settings.AI_MODEL}\n"
+            f"messages={messages}"
         )
 
-        return response["message"]["content"]
+        response = self.client.chat.completions.create(
+            model=settings.AI_MODEL,
+            messages=messages,
+            temperature=0.3,
+        )
+
+        return response.choices[0].message.content

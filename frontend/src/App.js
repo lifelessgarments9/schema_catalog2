@@ -38,6 +38,8 @@ function AppContent() {
 
         <Route path="/catalog" element={<CatalogPage />} />
 
+        <Route path="/catalog/devices" element={<CatalogPage />} />
+
         <Route path="/device/:id" element={<DevicePage currentUser={currentUser} />} />
 
         <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />

@@ -667,6 +667,7 @@ h6 {
     background-color: var(--bg-color);
     border: 1px solid var(--border-pale);
     border-radius: var(--r-md) !important;
+    max-width: 280px;
 }
 
 .device-info-grid .border-bottom {
