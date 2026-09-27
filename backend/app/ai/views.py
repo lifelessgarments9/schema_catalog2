@@ -29,6 +29,8 @@ class AskView(APIView):
             return Response(result, status=status.HTTP_200_OK)
         except PermissionError as e:
             return Response({"detail": str(e)},status=status.HTTP_429_TOO_MANY_REQUESTS)
+        except ChatService.AIProviderError as e:
+            return Response ({'detail':str(e)},status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 class ChatListCreateView(APIView):
     permission_classes = [IsAuthenticated]

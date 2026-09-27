@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import Q,QuerySet
 
 
 class DeviceFilter:
@@ -24,6 +24,9 @@ class DeviceFilter:
         if min_qty: qs = qs.filter(quantity_storage__gte=int(min_qty))
 
         search = self.params.get("search")
-        if search: qs = qs.filter(name__icontains=search) | qs.filter(description__icontains=search)
-
+        if search: qs = qs.filter(
+            Q(name__icontains=search)|
+            Q(description__icontains=search)|
+            Q(specifications__icontains=search)
+        )
         return qs

@@ -7,10 +7,27 @@ from .services import CatalogService
 
 @receiver(post_save, sender=Device)
 def on_device_save(sender, instance, created, **kwargs):
-    if instance.documentation and not instance.doc_text:
-        CatalogService.store_doc_text(instance)
+    if getattr(instance, '_updating_meta', False):
+        return
 
-    CatalogService.store_embedding(instance)
+    instance._updating_meta = True
+    try:
+        updated_fields = kwargs.get('update_fields')
+        if updated_fields and not {'documentation', 'doc_text', 'name', 'description', 'specifications'}.intersection(
+                updated_fields):
+            return
+
+        has_changes = False
+
+        if instance.documentation and not instance.doc_text:
+            instance.doc_text = CatalogService.store_doc_text(instance)
+            has_changes = True
+
+        if created or has_changes or not instance.embedding:
+            CatalogService.store_embedding(instance)
+
+    finally:
+        instance._updating_meta = False
 
 
 @receiver(post_save, sender=Specification)

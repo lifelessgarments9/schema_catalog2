@@ -85,7 +85,7 @@ class DeviceDetailView(APIView):
     @extend_schema(
         responses={204: None},
     )
-    def delete(self, pk):
+    def delete(self, request, pk):
         CatalogService.delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 

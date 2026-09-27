@@ -12,7 +12,8 @@ from app.ai.prompts import SERVICE_CONTEXT
 
 
 class ChatService:
-
+    class AIProviderError(Exception):
+        """ """
     def get_or_create_chat(self, user, chat_id: int | None, title: str = "") -> Chat:
         if chat_id: return get_object_or_404(Chat,pk=chat_id,user=user)
         return Chat.objects.create(user=user, title=title)
@@ -40,22 +41,27 @@ class ChatService:
         user_message = ChatMessage.objects.create(chat=chat, role="user", content=message)
         chat.save()
 
-        query_embedding = EmbeddingService.create(message)
-        analysis = QueryAnalyzer().analyze(query_embedding)
+        try:
+            query_embedding = EmbeddingService.create(message)
+            analysis = QueryAnalyzer().analyze(query_embedding)
 
-        print(f"analysis: {analysis}")
+            print(f"analysis: {analysis}")
 
-        if analysis["domain"] == "catalog":
-            scored_devices = DeviceSearcher().search(query_embedding)
-            context = ContextBuilder().build(scored_devices)
-        elif analysis["domain"] == "service":
-            scored_devices = []
-            context = SERVICE_CONTEXT
-        else:
-            scored_devices = []
-            context = ""
+            if analysis["domain"] == "catalog":
+                scored_devices = DeviceSearcher().search(query_embedding)
+                context = ContextBuilder().build(scored_devices)
+            elif analysis["domain"] == "service":
+                scored_devices = []
+                context = SERVICE_CONTEXT
+            else:
+                scored_devices = []
+                context = ""
 
-        answer = Generator().generate(message, context, messages)
+            answer = Generator().generate(message, context, messages)
+        except Exception as e:
+            user_message.delete()
+            raise ChatService.AIProviderError("AI provider error, try again later") from e
+
         sources = [{"id": device.pk, "name": device.name} for device, _score in scored_devices]
 
         with transaction.atomic():

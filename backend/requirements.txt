@@ -32,6 +32,7 @@ python-dotenv==1.2.2
 
 # Production
 gunicorn==26.2.0
+whitenoise==6.8.2
 
 # react-markdown
 # remark-gfm

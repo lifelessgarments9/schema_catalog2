@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+
+.venv/
+venv/
+
+.idea/
+.vscode/
+
+.git/
+.gitignore
+
+# не копируем в образ, монтируется через volume
+db.sqlite3
+
+media/
+
+# Собранная статика
+staticfiles/
+
+# Временные и IDE файлы
+*.md
+catalog context.txt
+settings_example.py

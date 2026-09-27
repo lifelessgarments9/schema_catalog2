@@ -13,6 +13,7 @@ class QueryAnalyzer:
     THRESHOLD = 0.60
     CACHE_KEY = "ai:reference_embeddings"
     CACHE_TTL = 60 * 60
+    general_return = {"domain":"general","score":0.0,"details":{},}
 
     def _reference_embeddings(self):
         refs = cache.get(self.CACHE_KEY)
@@ -32,13 +33,17 @@ class QueryAnalyzer:
         return refs
 
     def analyze(self, query_embedding: list) -> dict:
+        refs=self._reference_embeddings()
+        if not refs: return self.general_return
+
         scores = defaultdict(list)
         for domain, embedding in self._reference_embeddings():
+            if not embedding: continue
             similarity = cosine_similarity(query_embedding,embedding,)
             scores[domain].append(similarity)
 
+        if not scores: return self.general_return
         averages = {}
-
         for domain, values in scores.items():
             top_values = heapq.nlargest(self.TOP_K, values)
             averages[domain] = sum(top_values) / len(top_values)
