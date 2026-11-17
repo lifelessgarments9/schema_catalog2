@@ -14,12 +14,20 @@ import CartPage from "./pages/CartPage";
 import RequestsPage from "./pages/RequestsPage";
 import ChatsPage from "./pages/ChatsPage";
 
+function getStoredUser() {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser || storedUser === "undefined" || storedUser === "null") return null;
+
+  try {
+    return JSON.parse(storedUser);
+  } catch {
+    localStorage.removeItem("user");
+    return null;
+  }
+}
+
 function AppContent() {
-  const [currentUser, setCurrentUser] = useState(() => {
-    const user = localStorage.getItem("user");
-    if (!user || user === "undefined" || user === "null") return null;
-    return user ? JSON.parse(user) : null;
-  });
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
 
   const handleLogin = (user) => {
     setCurrentUser(user);

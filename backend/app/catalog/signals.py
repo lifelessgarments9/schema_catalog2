@@ -2,7 +2,6 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .models import Device, Specification
-from .services import CatalogService
 
 
 @receiver(post_save, sender=Device)
@@ -10,8 +9,11 @@ def on_device_save(sender, instance, created, **kwargs):
     if getattr(instance, '_updating_meta', False):
         return
 
+    from .services import CatalogService
+
     instance._updating_meta = True
     try:
+
         updated_fields = kwargs.get('update_fields')
         if updated_fields and not {'documentation', 'doc_text', 'name', 'description', 'specifications'}.intersection(
                 updated_fields):
@@ -20,7 +22,7 @@ def on_device_save(sender, instance, created, **kwargs):
         has_changes = False
 
         if instance.documentation and not instance.doc_text:
-            instance.doc_text = CatalogService.store_doc_text(instance)
+            CatalogService.store_doc_text(instance)
             has_changes = True
 
         if created or has_changes or not instance.embedding:

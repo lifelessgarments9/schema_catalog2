@@ -76,10 +76,19 @@ export default function RequestsPage() {
             message: "Заявка будет скрыта.",
             confirmText: "Удалить",
             onConfirm: async () => {
-                await deleteRentalRequest(requestId);
-                if (requests.length === 1 && page > 1) {setPage(p => p - 1);}
-                else {await load();}
-                setModal(null);
+                try {
+                    await deleteRentalRequest(requestId);
+                    if (requests.length === 1 && page > 1) {
+                        setPage(currentPage => currentPage - 1);
+                    } else {
+                        await load();
+                    }
+                } catch (error) {
+                    console.error("Ошибка удаления заявки:", error);
+                    setToast({ message: error.message || "Не удалось удалить заявку." });
+                } finally {
+                    setModal(null);
+                }
             },
         });
     }

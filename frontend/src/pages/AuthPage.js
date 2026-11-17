@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { login, register } from "../api";
+import { API_BASE_URL, login, register } from "../api";
 
 // URL, на который CAS-сервер вернёт пользователя с ticket'ом
 const CAS_LOGIN_URL =
     "https://proxy.bmstu.ru:8443/cas/login?" +
     "service=" +
-    encodeURIComponent("http://localhost:8000/accounts/cas/callback/"); // https://schema.example.ru/accounts/cas/callback/
+    encodeURIComponent(`${API_BASE_URL}/accounts/cas/callback/`);
 
 function AuthPage({ onLogin }) {
     const navigate = useNavigate();

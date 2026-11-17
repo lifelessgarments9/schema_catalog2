@@ -1137,7 +1137,6 @@ a:hover .pdf-icon {
     text-align: left;
 }
 
-/* App.css */
 @media (max-width: 768px) {
     .chat-sidebar {
         position: fixed;

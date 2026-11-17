@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../api";
 
 export default function CASCallback({ onLogin }) {
     const [searchParams] = useSearchParams();
@@ -26,7 +27,7 @@ export default function CASCallback({ onLogin }) {
         if (refresh) localStorage.setItem("refresh", refresh);
 
         // Загружаем профиль пользователя
-        fetch("http://localhost:8000/accounts/profile/", { // https://schema.example.ru/accounts/profile/
+        fetch(`${API_BASE_URL}/accounts/profile/`, {
             headers: { Authorization: `Bearer ${access}` },
         })
             .then((r) => {

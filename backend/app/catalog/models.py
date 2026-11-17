@@ -19,6 +19,7 @@ class Specification(models.Model):
 
     class Meta:
         unique_together = ("category", "name")
+
         ordering = ["name"]
 
     def __str__(self):
