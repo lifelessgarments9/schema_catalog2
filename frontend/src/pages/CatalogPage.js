@@ -17,6 +17,7 @@ export default function CatalogPage() {
     const [devices, setDevices] = useState(null);
     const [totalPages, setTotalPages] = useState(1);
     const [allCategories, setAllCategories] = useState([]);
+    const [categoriesError, setCategoriesError] = useState("");
 
     const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
 
@@ -42,7 +43,12 @@ export default function CatalogPage() {
     }
 
     async function loadAllCategories() {
-        setAllCategories(await getCategories());
+        try {
+            setAllCategories(await getCategories());
+        } catch (error) {
+            console.error("Ошибка загрузки категорий:", error);
+            setCategoriesError(error.message);
+        }
     }
 
     function updateParams(changes) {
@@ -112,6 +118,7 @@ export default function CatalogPage() {
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
                                 </select>
+                                {categoriesError && <div className="text-danger small mt-2">{categoriesError}</div>}
                             </div>
                             <div className="form-check mb-3 d-flex align-items-center gap-2 ps-0">
                                 <input

@@ -28,20 +28,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 AI_API_KEY = os.environ["AI_API_KEY"]
 AI_API_KEY_ID = os.environ["AI_API_KEY_ID"]
-AI_BASE_URL = os.environ.get("AI_BASE_URL","https://ai.api.cloud.yandex.net/v1")
+AI_BASE_URL = os.environ.get("AI_BASE_URL", "")
 AI_MODEL = os.environ["AI_MODEL"]
 
-DEBUG = True #!!!
+DEBUG = os.environ.get("DEBUG", "False").lower() in {"true", "1", "yes"}
 
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
-if DEBUG:
-    ALLOWED_HOSTS += ["localhost", "127.0.0.1", "[::1]"]
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -69,20 +65,12 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# ── CAS Configuration (МГТУ) ──────────────────────────────────
-# Базовый URL CAS-сервера МГТУ (с trailing slash)
-CAS_SERVER_URL = 'https://proxy.bmstu.ru:8443/cas/'
+# ── CAS Configuration ──────────────────────────────────────────
+CAS_SERVER_URL = os.environ.get("CAS_SERVER_URL", "")
 # Версия протокола CAS (2 — поддерживает serviceValidate)
 CAS_VERSION = '2'
-# Адрес Django-обработчика CAS callback (должен совпадать с service при валидации ticket)
-CAS_SERVICE_URL = os.environ.get(
-    "CAS_SERVICE_URL",
-    "http://localhost:8000/accounts/cas/callback/"
-) # https://schema.example.ru/accounts/cas/callback/
-FRONTEND_URL = os.environ.get(
-    "FRONTEND_URL",
-    "http://localhost:3000"
-) # https://catalog.example.ru
+CAS_SERVICE_URL = os.environ.get("CAS_SERVICE_URL", "")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -207,7 +195,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
 
@@ -242,10 +230,8 @@ if not DEBUG:
         },
     }
 
-# --- Настройка CSRF_TRUSTED_ORIGINS (нужна и в деве, и в проде, но с разным поведением) ---
-# Для дева используем дефолтные локальные адреса, для прода — из .env
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]

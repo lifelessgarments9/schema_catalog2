@@ -105,7 +105,7 @@ class CASCallbackView(APIView):
 
     def get(self, request):
         ticket = request.GET.get('ticket')
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+        frontend_url = settings.FRONTEND_URL
 
         # Если ticket отсутствует — редирект на страницу входа с ошибкой
         if not ticket:

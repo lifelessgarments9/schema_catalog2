@@ -3,11 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { API_BASE_URL, login, register } from "../api";
 
-// URL, на который CAS-сервер вернёт пользователя с ticket'ом
-const CAS_LOGIN_URL =
-    "https://proxy.bmstu.ru:8443/cas/login?" +
-    "service=" +
-    encodeURIComponent(`${API_BASE_URL}/accounts/cas/callback/`);
+const CAS_LOGIN_URL = process.env.REACT_APP_CAS_LOGIN_URL?.trim();
 
 function AuthPage({ onLogin }) {
     const navigate = useNavigate();
@@ -61,8 +57,14 @@ function AuthPage({ onLogin }) {
     }
 
     function handleCASLogin() {
-        // Шаг 1 CAS: перенаправляем браузер на CAS-сервер МГТУ
-        window.location.href = CAS_LOGIN_URL;
+        if (!CAS_LOGIN_URL || !API_BASE_URL) {
+            setError("Не настроены REACT_APP_API_URL и/или REACT_APP_CAS_LOGIN_URL");
+            return;
+        }
+
+        const url = new URL(CAS_LOGIN_URL);
+        url.searchParams.set("service", `${API_BASE_URL}/accounts/cas/callback/`);
+        window.location.href = url.toString();
     }
 
     return (

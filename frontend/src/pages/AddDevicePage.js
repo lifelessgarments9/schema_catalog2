@@ -23,8 +23,12 @@ export default function AddDevicePage() {
 
     useEffect(() => {
         async function loadCategories() {
-            const data = await getCategories();
-            setCategories(data);
+            try {
+                setCategories(await getCategories());
+            } catch (error) {
+                console.error("Ошибка загрузки категорий:", error);
+                setError(error.message);
+            }
         }
 
         loadCategories();

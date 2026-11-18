@@ -1,5 +1,4 @@
-export const API_BASE_URL = (process.env.REACT_APP_API_URL?.trim() || "http://localhost:8000")
-    .replace(/\/+$/, "");
+export const API_BASE_URL = (process.env.REACT_APP_API_URL?.trim() || "").replace(/\/+$/, "");
 const API = API_BASE_URL;
 
 // ─── helpers ───────────────────────────────────────────────────────────────
@@ -53,7 +52,25 @@ export async function getDevice(id) {
 }
 
 export async function getCategories() {
-    return fetch(`${API}/catalog/categories/`).then(r => r.json());
+    if (!API_BASE_URL) {
+        throw new Error("Не задана переменная REACT_APP_API_URL");
+    }
+
+    let response;
+    try {
+        response = await fetch(`${API}/catalog/categories/`);
+    } catch (error) {
+        if (error instanceof TypeError) {
+            throw new Error(`Не удалось подключиться к API ${API_BASE_URL}. Проверьте адрес сервера и настройки CORS.`);
+        }
+        throw error;
+    }
+
+    if (!response.ok) {
+        throw new Error(`Не удалось загрузить категории (HTTP ${response.status})`);
+    }
+
+    return response.json();
 }
 
 export async function addDevice(data) {
