@@ -15,7 +15,7 @@ function AuthPage({ onLogin }) {
     const urlError = new URLSearchParams(window.location.search).get("error");
     const ssoErrorMessages = {
         sso_config: "Не заданы все настройки SSO: проверьте SSO_CLIENT_SECRET и FRONTEND_URL.",
-        sso_https: "SSO требует HTTPS для адреса возврата. Настройте HTTPS и укажите HTTPS в SSO_REDIRECT_URI.",
+        sso_https: "нет HTTPS в SSO_REDIRECT_URI",
         sso_state: "Проверка безопасности SSO не пройдена. Попробуйте снова.",
         sso_denied: "SSO отклонил запрос на вход.",
         sso_failed: "Не удалось выполнить вход через SSO.",
