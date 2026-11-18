@@ -8,9 +8,6 @@ djangorestframework-simplejwt==5.5.1
 # Swagger/OpenAPI
 drf-spectacular==0.30.0
 
-# Auth
-django-cas-ng==5.0.1
-
 # AI — Ollama
 ollama>=0.6.0
 
@@ -20,7 +17,7 @@ openai>=1.0.0
 # PDF Generation
 reportlab>=4.0
 
-# HTTP Requests (CAS)
+# HTTP Requests (SSO OAuth2 and AI)
 requests>=2.31
 
 # Files & Images

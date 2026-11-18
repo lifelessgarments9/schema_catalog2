@@ -1,21 +1,16 @@
-// pages/CASCallback.js
-// Шаги 6–7 CAS-протокола:
-//   Django редиректит сюда с JWT-токенами в query string:
-//   /cas-callback?access=...&refresh=...
-//   Страница сохраняет токены, загружает профиль и логинит пользователя.
-
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../api";
 
-export default function CASCallback({ onLogin }) {
-    const [searchParams] = useSearchParams();
+export default function SSOCallback({ onLogin }) {
     const navigate = useNavigate();
     const [status, setStatus] = useState("loading"); // loading | error
 
     useEffect(() => {
-        const access = searchParams.get("access");
-        const refresh = searchParams.get("refresh");
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const access = params.get("access");
+        const refresh = params.get("refresh");
+        window.history.replaceState(null, "", window.location.pathname);
 
         if (!access) {
             setStatus("error");
@@ -40,6 +35,8 @@ export default function CASCallback({ onLogin }) {
                 navigate("/");
             })
             .catch(() => {
+                localStorage.removeItem("access");
+                localStorage.removeItem("refresh");
                 setStatus("error");
             });
     }, []);  // eslint-disable-line react-hooks/exhaustive-deps
@@ -48,7 +45,7 @@ export default function CASCallback({ onLogin }) {
         return (
             <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 gap-3">
                 <p className="text-danger fw-semibold">
-                    Ошибка CAS-авторизации. Токены не получены.
+                    Ошибка авторизации через SSO.
                 </p>
                 <button
                     className="btn btn-custom rounded-pill px-4 py-2"
@@ -65,7 +62,7 @@ export default function CASCallback({ onLogin }) {
             <div className="spinner-border" role="status">
                 <span className="visually-hidden">Загрузка...</span>
             </div>
-            <p className="text-muted">Вход через МГТУ CAS...</p>
+            <p className="text-muted">Вход через SSO МГТУ...</p>
         </div>
     );
 }

@@ -65,11 +65,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# ── CAS Configuration ──────────────────────────────────────────
-CAS_SERVER_URL = os.environ.get("CAS_SERVER_URL", "")
-# Версия протокола CAS (2 — поддерживает serviceValidate)
-CAS_VERSION = '2'
-CAS_SERVICE_URL = os.environ.get("CAS_SERVICE_URL", "")
+# ── BMSTU SSO OAuth2 ───────────────────────────────────────────
+SSO_BASE_URL = os.environ.get("SSO_BASE_URL", "").rstrip("/")
+SSO_CLIENT_ID = os.environ.get("SSO_CLIENT_ID", "")
+SSO_CLIENT_SECRET = os.environ.get("SSO_CLIENT_SECRET", "")
+SSO_REDIRECT_URI = os.environ.get("SSO_REDIRECT_URI", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 AUTH_USER_MODEL = "accounts.User"

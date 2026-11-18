@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 import { API_BASE_URL, login, register } from "../api";
 
-const CAS_LOGIN_URL = process.env.REACT_APP_CAS_LOGIN_URL?.trim();
-
 function AuthPage({ onLogin }) {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("login");
@@ -13,14 +11,16 @@ function AuthPage({ onLogin }) {
     const [registerData, setRegisterData] = useState({ username: "", email: "", password: "", password_confirm: "" });
     const [error, setError] = useState("");
 
-    // Читаем ошибку из URL-параметра (если CAS вернул ошибку)
+    // Показываем результат альтернативного SSO-входа.
     const urlError = new URLSearchParams(window.location.search).get("error");
-    const casErrorMessages = {
-        no_ticket: "CAS не вернул ticket. Попробуйте снова.",
-        cas_failed: "Авторизация через CAS не прошла. Проверьте данные.",
-        cas_unreachable: "Сервер CAS МГТУ недоступен. Попробуйте позже.",
-        cas_parse_error: "Ошибка разбора ответа CAS.",
-        server_error: "Внутренняя ошибка сервера.",
+    const ssoErrorMessages = {
+        sso_config: "Вход через SSO не настроен.",
+        sso_state: "Проверка безопасности SSO не пройдена. Попробуйте снова.",
+        sso_denied: "SSO отклонил запрос на вход.",
+        sso_failed: "Не удалось выполнить вход через SSO.",
+        sso_unavailable: "Сервис SSO временно недоступен.",
+        sso_inactive: "Учетная запись отключена.",
+        sso_conflict: "Не удалось безопасно связать учетную запись SSO.",
     };
 
     async function handleRegister() {
@@ -57,14 +57,12 @@ function AuthPage({ onLogin }) {
     }
 
     function handleCASLogin() {
-        if (!CAS_LOGIN_URL || !API_BASE_URL) {
-            setError("Не настроены REACT_APP_API_URL и/или REACT_APP_CAS_LOGIN_URL");
+        if (!API_BASE_URL) {
+            setError("Не задана переменная REACT_APP_API_URL");
             return;
         }
 
-        const url = new URL(CAS_LOGIN_URL);
-        url.searchParams.set("service", `${API_BASE_URL}/accounts/cas/callback/`);
-        window.location.href = url.toString();
+        window.location.assign(`${API_BASE_URL}/accounts/sso/login/`);
     }
 
     return (
@@ -75,18 +73,17 @@ function AuthPage({ onLogin }) {
                     ← На главную
                 </button>
 
-                {/* ─── Кнопка CAS (МГТУ) ─────────────────────────────── */}
                 <div className="mb-4 text-center">
                     <button
                         onClick={handleCASLogin}
-                        className="btn btn-cas w-100 py-2 d-flex align-items-center justify-content-center gap-2"
+                        className="btn btn-sso w-100 py-2 d-flex align-items-center justify-content-center gap-2"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
                             <path d="M2 12h20"/>
                         </svg>
-                        Войти через МГТУ
+                        Войти через SSO МГТУ
                     </button>
                 </div>
 
@@ -95,7 +92,6 @@ function AuthPage({ onLogin }) {
                     <span className="text-muted small">или</span>
                     <hr className="flex-grow-1 m-0"/>
                 </div>
-                {/* ──────────────────────────────────────────────────────── */}
 
                 <div className="nav nav-pills auth-tabs mb-4 justify-content-center p-1">
                     <button
@@ -183,7 +179,7 @@ function AuthPage({ onLogin }) {
 
                 {(error || urlError) && (
                     <div className="alert alert-danger custom-alert mt-4 mb-0 text-center small">
-                        {urlError ? (casErrorMessages[urlError] || `Ошибка: ${urlError}`) : error}
+                        {urlError ? (ssoErrorMessages[urlError] || `Ошибка: ${urlError}`) : error}
                     </div>
                 )}
 

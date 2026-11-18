@@ -222,8 +222,8 @@ h6 {
     transform: translateX(-3px);
 }
 
-/* CAS (BMSTU) button */
-.btn-cas {
+/* BMSTU SSO button */
+.btn-sso {
     background-color: #1a3a6b;
     color: #ffffff;
     font-weight: 500;
@@ -236,14 +236,14 @@ h6 {
         transform 0.18s var(--ease-out);
 }
 
-.btn-cas:hover {
+.btn-sso:hover {
     background-color: #14305a;
     color: #ffffff;
     box-shadow: 0 6px 18px rgba(26, 58, 107, 0.30);
     transform: translateY(-2px);
 }
 
-.btn-cas:active {
+.btn-sso:active {
     background-color: #0f2545;
     color: #ffffff;
     transform: translateY(0);

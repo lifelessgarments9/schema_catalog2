@@ -38,7 +38,6 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_API_URL=${REACT_APP_API_URL:?Set REACT_APP_API_URL in .env to the public backend URL}
-      - REACT_APP_CAS_LOGIN_URL=${REACT_APP_CAS_LOGIN_URL:-}
 
     depends_on:
       - backend

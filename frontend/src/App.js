@@ -9,7 +9,7 @@ import DevicePage from "./pages/DevicePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import AddDevicePage from "./pages/AddDevicePage";
-import CASCallback from "./pages/CASCallback";
+import SSOCallback from "./pages/SSOCallback";
 import CartPage from "./pages/CartPage";
 import RequestsPage from "./pages/RequestsPage";
 import ChatsPage from "./pages/ChatsPage";
@@ -64,8 +64,7 @@ function AppContent() {
 
         <Route path="/requests" element={<RequestsPage />} />
 
-        {/* CAS callback — шаги 6–7: Django редиректит сюда с JWT-токенами */}
-        <Route path="/cas-callback" element={<CASCallback onLogin={handleLogin} />} />
+        <Route path="/sso-callback" element={<SSOCallback onLogin={handleLogin} />} />
 
       </Routes>
     </>
