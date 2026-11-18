@@ -107,13 +107,16 @@ class SSOLoginView(APIView):
             settings.SSO_CLIENT_SECRET,
             settings.SSO_REDIRECT_URI,
             settings.FRONTEND_URL,
-        )) or (
+        )):
+            return sso_error_redirect("sso_config")
+
+        if (
             sso_url.scheme != "https"
             or not sso_url.hostname
             or callback_url.scheme != "https"
             or (not settings.DEBUG and frontend_url.scheme != "https")
         ):
-            return sso_error_redirect("sso_config")
+            return sso_error_redirect("sso_https")
 
         state = secrets.token_urlsafe(32)
         request.session["sso_oauth_state"] = state

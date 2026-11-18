@@ -27,6 +27,16 @@ class SSOOAuthTests(TestCase):
         ])
         self.assertEqual(params["state"], [self.client.session["sso_oauth_state"]])
 
+    @override_settings(
+        SSO_REDIRECT_URI="http://195.19.33.96:8000/accounts/sso/callback/",
+    )
+    def test_login_rejects_non_https_callback(self):
+        response = self.client.get("/accounts/sso/login/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("error=sso_https", response["Location"])
+        self.assertNotIn("sso_oauth_state", self.client.session)
+
     @patch("app.accounts.views.requests.get")
     @patch("app.accounts.views.requests.post")
     def test_callback_exchanges_code_and_creates_local_user(self, token_post, userinfo_get):
