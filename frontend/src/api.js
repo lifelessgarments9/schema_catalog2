@@ -107,6 +107,16 @@ export async function login(data) {
     return response.json();
 }
 
+export async function logoutFromSSO() {
+    const response = await fetch(`${API}/accounts/sso/logout/`, {
+        method: "POST",
+        credentials: "same-origin",
+    });
+    if (!response.ok) {
+        throw new Error(`Не удалось завершить сессию SSO (HTTP ${response.status})`);
+    }
+}
+
 // ─── cart ──────────────────────────────────────────────────────────────────
 
 export async function getCart() {

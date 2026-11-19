@@ -15,11 +15,7 @@ function AuthPage({ onLogin }) {
     const ssoErrorMessages = {
         sso_config: "Не заданы все настройки SSO: проверьте SSO_CLIENT_SECRET и FRONTEND_URL.",
         sso_state: "Проверка безопасности SSO не пройдена. Попробуйте снова.",
-        sso_denied: "SSO отклонил запрос на вход.",
-        sso_failed: "Не удалось выполнить вход через SSO.",
-        sso_unavailable: "Сервис SSO временно недоступен.",
-        sso_inactive: "Учетная запись отключена.",
-        sso_conflict: "Не удалось безопасно связать учетную запись SSO.",
+        sso_https: "SSO требует HTTPS для адреса возврата.",
     };
 
     async function handleRegister() {

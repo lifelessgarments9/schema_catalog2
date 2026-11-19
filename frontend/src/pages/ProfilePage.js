@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getRentalRequests } from "../api";
+import { getRentalRequests, logoutFromSSO } from "../api";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as DeviceIcon } from "../assets/device.svg";
 import { Link } from "react-router-dom";
@@ -9,7 +9,13 @@ export default function ProfilePage({ user, onLogout }) {
     const [requests, setRequests] = useState([]);
     const [requestsLoading, setRequestsLoading] = useState(true);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await logoutFromSSO();
+        } catch (error) {
+            console.error("Ошибка завершения сессии SSO:", error);
+        }
+
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
         localStorage.removeItem("user");

@@ -62,6 +62,7 @@ SSO_CLIENT_ID = os.environ.get("SSO_CLIENT_ID", "")
 SSO_CLIENT_SECRET = os.environ.get("SSO_CLIENT_SECRET", "")
 SSO_REDIRECT_URI = os.environ.get("SSO_REDIRECT_URI", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
+APP_URL_PREFIX = os.environ.get("APP_URL_PREFIX", "").strip("/")
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -176,10 +177,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-MEDIA_URL = '/media/'                    # доступ в браузере
+MEDIA_URL = f'/{APP_URL_PREFIX}/media/' if APP_URL_PREFIX else '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')   # где файлы
 
-STATIC_URL = '/static/'
+STATIC_URL = f'/{APP_URL_PREFIX}/django-static/' if APP_URL_PREFIX else '/django-static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CORS_ALLOW_ALL_ORIGINS = False

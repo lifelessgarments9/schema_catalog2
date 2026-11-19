@@ -7,26 +7,22 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
-from app.accounts.views import SSOLoginView, SSOCallbackView
+URL_PREFIX = f"{settings.APP_URL_PREFIX}/" if settings.APP_URL_PREFIX else ""
 
 urlpatterns = [
+    path(f"{URL_PREFIX}admin/", admin.site.urls),
 
-    path("admin/", admin.site.urls),
-
-    path("accounts/", include("app.accounts.urls")),
-    path("catalog/", include("app.catalog.urls")),
-    path("rental/", include("app.rental.urls")),
-    path("ai/", include("app.ai.urls")),
+    path(f"{URL_PREFIX}accounts/", include("app.accounts.urls")),
+    path(f"{URL_PREFIX}catalog/", include("app.catalog.urls")),
+    path(f"{URL_PREFIX}rental/", include("app.rental.urls")),
+    path(f"{URL_PREFIX}ai/", include("app.ai.urls")),
 
     # OpenAPI schema
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(f"{URL_PREFIX}api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "swagger/",
+        f"{URL_PREFIX}swagger/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
-
-    path("accounts/sso/login/",SSOLoginView.as_view(),name="sso_login",),
-    path("",SSOCallbackView.as_view(),name="sso_callback",),
 ]
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

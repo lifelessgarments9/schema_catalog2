@@ -14,6 +14,8 @@ import CartPage from "./pages/CartPage";
 import RequestsPage from "./pages/RequestsPage";
 import ChatsPage from "./pages/ChatsPage";
 
+const BASE_PATH = (process.env.REACT_APP_BASE_PATH || "").replace(/\/+$/, "");
+
 function getStoredUser() {
   const storedUser = localStorage.getItem("user");
   if (!storedUser || storedUser === "undefined" || storedUser === "null") return null;
@@ -28,14 +30,26 @@ function getStoredUser() {
 
 function AppContent() {
   const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const ssoParams = new URLSearchParams(window.location.search);
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const appRoot = BASE_PATH || "/";
+  const isSsoResponse = currentPath === appRoot
+    && (ssoParams.has("code") || ssoParams.has("error"));
 
   const handleLogin = (user) => {
     setCurrentUser(user);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
     setCurrentUser(null);
   };
+
+  if (isSsoResponse) {
+    return <SSOCallback onLogin={handleLogin} />;
+  }
 
   return (
     <>
@@ -64,8 +78,6 @@ function AppContent() {
 
         <Route path="/requests" element={<RequestsPage />} />
 
-        <Route path="/sso-callback" element={<SSOCallback onLogin={handleLogin} />} />
-
       </Routes>
     </>
   );
@@ -73,7 +85,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASE_PATH || "/"}>
       <AppContent />
     </BrowserRouter>
   );

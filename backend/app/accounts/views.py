@@ -1,6 +1,4 @@
 import logging
-logger = logging.getLogger(__name__)
-
 import secrets
 from urllib.parse import urlencode, urlparse
 
@@ -20,6 +18,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from app.accounts.models import User
 from app.accounts.serializers import UserSerializer, RegisterSerializer, LoginSerializer
 from app.accounts.services import AccountService
+
+logger = logging.getLogger(__name__)
 
 
 class IsNotAuthenticated(BasePermission):
@@ -94,7 +94,8 @@ class ProfileView(APIView):
 
 
 def sso_error_redirect(error):
-    return redirect(f"{settings.FRONTEND_URL.rstrip('/')}/auth?{urlencode({'error': error})}")
+    frontend_url = settings.FRONTEND_URL.rstrip("/")
+    return redirect(f"{frontend_url}/auth?{urlencode({'error': error})}")
 
 
 class SSOLoginView(APIView):
@@ -113,6 +114,15 @@ class SSOLoginView(APIView):
         )):
             return sso_error_redirect("sso_config")
 
+        if (
+            sso_url.scheme != "https"
+            or not sso_url.hostname
+            or callback_url.scheme != "https"
+            or not callback_url.hostname
+            or (not settings.DEBUG and frontend_url.scheme != "https")
+        ):
+            return sso_error_redirect("sso_https")
+
         state = secrets.token_urlsafe(32)
         request.session["sso_oauth_state"] = state
         params = urlencode({
@@ -127,30 +137,19 @@ class SSOLoginView(APIView):
 class SSOCallbackView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def post(self, request):
         expected_state = request.session.pop("sso_oauth_state", None)
-        received_state = request.query_params.get("state", "")
-        if not expected_state or not constant_time_compare(expected_state, received_state):
-            return sso_error_redirect("sso_state")
+        received_state = request.data.get("state", "")
+        if (
+            not expected_state
+            or not isinstance(received_state, str)
+            or not constant_time_compare(expected_state, received_state)
+        ):
+            return Response({"detail": "Invalid OAuth state."}, status=status.HTTP_400_BAD_REQUEST)
 
-        #________________________________________________
-        error = request.query_params.get("error")
-        error_description = request.query_params.get("error_description")
-        error_uri = request.query_params.get("error_uri")
-
-        if error:
-            logger.warning(
-                "SSO authorization rejected: error=%s, description=%s, uri=%s",
-                error,
-                error_description,
-                error_uri,
-            )
-            return sso_error_redirect("sso_denied")
-        #________________________________________________
-
-        code = request.query_params.get("code")
-        if not code:
-            return sso_error_redirect("sso_failed")
+        code = request.data.get("code")
+        if not isinstance(code, str) or not code:
+            return Response({"detail": "Missing authorization code."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             token_response = requests.post(
@@ -168,7 +167,10 @@ class SSOCallbackView(APIView):
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
             if not access_token:
-                return sso_error_redirect("sso_failed")
+                return Response(
+                    {"detail": "SSO did not return an access token."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
 
             userinfo_response = requests.get(
                 f"{settings.SSO_BASE_URL}/userinfo",
@@ -178,30 +180,31 @@ class SSOCallbackView(APIView):
             userinfo_response.raise_for_status()
             userinfo = userinfo_response.json()
         except (requests.RequestException, ValueError):
-            return sso_error_redirect("sso_unavailable")
+            logger.exception("BMSTU SSO token or userinfo request failed")
+            return Response({"detail": "SSO is temporarily unavailable."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         person = userinfo.get("person", userinfo) if isinstance(userinfo, dict) else None
         if not isinstance(person, dict):
-            return sso_error_redirect("sso_failed")
+            return Response({"detail": "Invalid SSO userinfo response."}, status=status.HTTP_502_BAD_GATEWAY)
 
         identity = person.get("guid") or person.get("id")
         if not identity:
-            return sso_error_redirect("sso_failed")
+            return Response({"detail": "SSO user identity is missing."}, status=status.HTTP_502_BAD_GATEWAY)
 
         username = f"sso_{identity}"
         if len(username) > 150:
-            return sso_error_redirect("sso_failed")
+            return Response({"detail": "SSO user identity is invalid."}, status=status.HTTP_502_BAD_GATEWAY)
 
         user = User.objects.filter(username=username).first()
         if user and user.has_usable_password():
-            return sso_error_redirect("sso_conflict")
+            return Response({"detail": "SSO account conflicts with a local account."}, status=status.HTTP_409_CONFLICT)
         if not user:
             user = User.objects.create(
                 username=username,
                 password=make_password(None),
             )
         if not user.is_active:
-            return sso_error_redirect("sso_inactive")
+            return Response({"detail": "This account is inactive."}, status=status.HTTP_403_FORBIDDEN)
 
         updated_fields = []
         for field, value in (
@@ -216,8 +219,34 @@ class SSOCallbackView(APIView):
             user.save(update_fields=updated_fields)
 
         refresh = RefreshToken.for_user(user)
-        tokens = urlencode({
+        request.session["sso_access_token"] = access_token
+        return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
         })
-        return redirect(f"{settings.FRONTEND_URL.rstrip('/')}/sso-callback#{tokens}")
+
+
+class SSOLogoutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        access_token = request.session.pop("sso_access_token", None)
+        request.session.flush()
+
+        if access_token:
+            try:
+                response = requests.get(
+                    f"{settings.SSO_BASE_URL}/logout",
+                    params={"type": "server"},
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10,
+                )
+                response.raise_for_status()
+            except requests.RequestException:
+                logger.exception("BMSTU SSO logout request failed")
+                return Response(
+                    {"detail": "Could not end the SSO session."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
