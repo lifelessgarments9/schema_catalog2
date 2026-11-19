@@ -17,11 +17,9 @@ export default function SSOCallback({ onLogin }) {
             return;
         }
 
-        // Сохраняем токены
         localStorage.setItem("access", access);
         if (refresh) localStorage.setItem("refresh", refresh);
 
-        // Загружаем профиль пользователя
         fetch(`${API_BASE_URL}/accounts/profile/`, {
             headers: { Authorization: `Bearer ${access}` },
         })

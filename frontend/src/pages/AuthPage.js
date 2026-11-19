@@ -11,11 +11,9 @@ function AuthPage({ onLogin }) {
     const [registerData, setRegisterData] = useState({ username: "", email: "", password: "", password_confirm: "" });
     const [error, setError] = useState("");
 
-    // Показываем результат альтернативного SSO-входа.
     const urlError = new URLSearchParams(window.location.search).get("error");
     const ssoErrorMessages = {
         sso_config: "Не заданы все настройки SSO: проверьте SSO_CLIENT_SECRET и FRONTEND_URL.",
-        sso_https: "нет HTTPS в SSO_REDIRECT_URI",
         sso_state: "Проверка безопасности SSO не пройдена. Попробуйте снова.",
         sso_denied: "SSO отклонил запрос на вход.",
         sso_failed: "Не удалось выполнить вход через SSO.",
@@ -57,7 +55,7 @@ function AuthPage({ onLogin }) {
         }
     }
 
-    function handleCASLogin() {
+    function handleSSOLogin() {
         if (!API_BASE_URL) {
             setError("Не задана переменная REACT_APP_API_URL");
             return;
@@ -76,7 +74,7 @@ function AuthPage({ onLogin }) {
 
                 <div className="mb-4 text-center">
                     <button
-                        onClick={handleCASLogin}
+                        onClick={handleSSOLogin}
                         className="btn btn-sso w-100 py-2 d-flex align-items-center justify-content-center gap-2"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
