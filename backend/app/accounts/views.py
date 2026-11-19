@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import secrets
 from urllib.parse import urlencode, urlparse
 
@@ -130,8 +133,20 @@ class SSOCallbackView(APIView):
         if not expected_state or not constant_time_compare(expected_state, received_state):
             return sso_error_redirect("sso_state")
 
-        if request.query_params.get("error"):
+        #________________________________________________
+        error = request.query_params.get("error")
+        error_description = request.query_params.get("error_description")
+        error_uri = request.query_params.get("error_uri")
+
+        if error:
+            logger.warning(
+                "SSO authorization rejected: error=%s, description=%s, uri=%s",
+                error,
+                error_description,
+                error_uri,
+            )
             return sso_error_redirect("sso_denied")
+        #________________________________________________
 
         code = request.query_params.get("code")
         if not code:
