@@ -14,6 +14,4 @@ urlpatterns = [
     path("register/", RegisterView.as_view()),
     path("profile/", ProfileView.as_view()),
     path("login/", LoginView.as_view()),
-    path("sso/login/", SSOLoginView.as_view(), name="sso-login"),
-    path("sso/callback/", SSOCallbackView.as_view(), name="sso-callback"),
 ]

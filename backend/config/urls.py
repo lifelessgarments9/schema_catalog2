@@ -7,6 +7,7 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
+from app.accounts.views import SSOLoginView, SSOCallbackView
 
 urlpatterns = [
 
@@ -24,5 +25,8 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
+
+    path("accounts/sso/login/",SSOLoginView.as_view(),name="sso_login",),
+    path("",SSOCallbackView.as_view(),name="sso_callback",),
 ]
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

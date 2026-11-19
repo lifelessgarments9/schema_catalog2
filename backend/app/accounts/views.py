@@ -158,9 +158,10 @@ class SSOCallbackView(APIView):
                 data={
                     "grant_type": "authorization_code",
                     "code": code,
+                    "client_id": settings.SSO_CLIENT_ID,
+                    "client_secret": settings.SSO_CLIENT_SECRET,
                     "redirect_uri": settings.SSO_REDIRECT_URI,
                 },
-                auth=(settings.SSO_CLIENT_ID, settings.SSO_CLIENT_SECRET),
                 timeout=10,
             )
             token_response.raise_for_status()
