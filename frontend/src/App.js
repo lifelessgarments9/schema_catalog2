@@ -33,8 +33,7 @@ function AppContent() {
   const ssoParams = new URLSearchParams(window.location.search);
   const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const appRoot = BASE_PATH || "/";
-  const isSsoResponse = currentPath === appRoot
-    && (ssoParams.has("code") || ssoParams.has("error"));
+const isSsoResponse =currentPath === `${appRoot}/sso/callback` && (ssoParams.has("code") || ssoParams.has("error"));
 
   const handleLogin = (user) => {
     setCurrentUser(user);
@@ -46,10 +45,6 @@ function AppContent() {
     localStorage.removeItem("user");
     setCurrentUser(null);
   };
-
-  if (isSsoResponse) {
-    return <SSOCallback onLogin={handleLogin} />;
-  }
 
   return (
     <>
@@ -65,6 +60,8 @@ function AppContent() {
         <Route path="/device/:id" element={<DevicePage currentUser={currentUser} />} />
 
         <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
+
+        <Route path="/sso/callback" element={<SSOCallback />} />
 
         <Route path="/device/add" element={<AddDevicePage />} />
 
