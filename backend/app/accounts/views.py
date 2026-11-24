@@ -153,16 +153,14 @@ class SSOCallbackView(APIView):
 
         try:
             token_response = requests.post(
-                f"{settings.SSO_BASE_URL}/token",
+                settings.BMSTU_TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": settings.SSO_REDIRECT_URI,
+                    "client_id": settings.BMSTU_CLIENT_ID,
+                    "client_secret": settings.BMSTU_CLIENT_SECRET,
+                    "redirect_uri": settings.BMSTU_REDIRECT_URI,
                 },
-                auth=(
-                    settings.SSO_CLIENT_ID,
-                    settings.SSO_CLIENT_SECRET,
-                ),
                 timeout=10,
             )
 
