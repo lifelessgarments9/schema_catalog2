@@ -85,7 +85,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter basename={BASE_PATH || "/"}>
+    <BrowserRouter basename="/fablab">
       <AppContent />
     </BrowserRouter>
   );
