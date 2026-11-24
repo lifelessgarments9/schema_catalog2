@@ -41,6 +41,10 @@ services:
       - REACT_APP_API_URL=${REACT_APP_API_URL:?Set REACT_APP_API_URL in .env to the public backend URL}
       - REACT_APP_BASE_PATH=${APP_URL_PREFIX:-}
       - PUBLIC_URL=${APP_URL_PREFIX:-}
+      
+      - WDS_SOCKET_HOST=lk.guimc.bmstu.ru
+      - WDS_SOCKET_PORT=443
+      - WDS_SOCKET_PATH=/fablab/ws
 
     depends_on:
       - backend
