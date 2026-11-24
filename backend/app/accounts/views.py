@@ -163,7 +163,22 @@ class SSOCallbackView(APIView):
                 },
                 timeout=10,
             )
-            token_response.raise_for_status()
+            if not token_response.ok:
+                try:
+                    error_data = token_response.json()
+                except ValueError:
+                    error_data = {}
+
+                logger.error(
+                    "BMSTU token endpoint rejected request: "
+                    "status=%s, error=%s, description=%s",
+                    token_response.status_code,
+                    error_data.get("error"),
+                    error_data.get("error_description"),
+                )
+
+                token_response.raise_for_status()
+                
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
             if not access_token:
