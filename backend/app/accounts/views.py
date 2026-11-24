@@ -157,28 +157,24 @@ class SSOCallbackView(APIView):
                 data={
                     "grant_type": "authorization_code",
                     "code": code,
-                    "client_id": settings.SSO_CLIENT_ID,
-                    "client_secret": settings.SSO_CLIENT_SECRET,
                     "redirect_uri": settings.SSO_REDIRECT_URI,
                 },
+                auth=(
+                    settings.SSO_CLIENT_ID,
+                    settings.SSO_CLIENT_SECRET,
+                ),
                 timeout=10,
             )
+
             if not token_response.ok:
-                try:
-                    error_data = token_response.json()
-                except ValueError:
-                    error_data = {}
-
                 logger.error(
-                    "BMSTU token endpoint rejected request: "
-                    "status=%s, error=%s, description=%s",
+                    "BMSTU TOKEN ERROR: status=%s, content_type=%s, body=%s",
                     token_response.status_code,
-                    error_data.get("error"),
-                    error_data.get("error_description"),
+                    token_response.headers.get("Content-Type"),
+                    token_response.text[:2000],
                 )
-
                 token_response.raise_for_status()
-                
+
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
             if not access_token:
