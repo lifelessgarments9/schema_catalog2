@@ -137,9 +137,9 @@ class SSOLoginView(APIView):
 class SSOCallbackView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def get(self, request):
         expected_state = request.session.pop("sso_oauth_state", None)
-        received_state = request.data.get("state", "")
+        received_state = request.query_params.get("state", "")
         if (
             not expected_state
             or not isinstance(received_state, str)
@@ -147,7 +147,7 @@ class SSOCallbackView(APIView):
         ):
             return Response({"detail": "Invalid OAuth state."}, status=status.HTTP_400_BAD_REQUEST)
 
-        code = request.data.get("code")
+        code = request.query_params.get("code")
         if not isinstance(code, str) or not code:
             return Response({"detail": "Missing authorization code."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -164,14 +164,11 @@ class SSOCallbackView(APIView):
                 timeout=10,
             )
 
-            if not token_response.ok:
-                logger.error(
-                    "BMSTU TOKEN ERROR: status=%s, content_type=%s, body=%s",
-                    token_response.status_code,
-                    token_response.headers.get("Content-Type"),
-                    token_response.text[:2000],
-                )
-                token_response.raise_for_status()
+            print("BMSTU TOKEN STATUS:", token_response.status_code)
+            print("BMSTU TOKEN CONTENT TYPE:", token_response.headers.get("Content-Type"))
+            print("BMSTU TOKEN RESPONSE:", token_response.text[:2000])
+
+            token_response.raise_for_status()
 
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
