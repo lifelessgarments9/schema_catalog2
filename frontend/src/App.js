@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import { logoutFromSSO } from "./api";
 import Header from "./components/Header";
 
 import HomePage from "./pages/HomePage";
@@ -28,62 +28,68 @@ function getStoredUser() {
   }
 }
 
-function AppContent() {
-  const [currentUser, setCurrentUser] = useState(getStoredUser);
-  const ssoParams = new URLSearchParams(window.location.search);
-  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
-  const appRoot = BASE_PATH || "/";
-const isSsoResponse =currentPath === `${appRoot}/sso/callback` && (ssoParams.has("code") || ssoParams.has("error"));
-
-  const handleLogin = (user) => {
-    setCurrentUser(user);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user");
-    setCurrentUser(null);
-  };
-
+function AppContent({ currentUser, handleLogin, handleLogout }) {
   return (
     <>
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header currentUser={currentUser} onLogout={handleLogout}/>
 
-      <Routes>
-        <Route path="/" element={<HomePage currentUser={currentUser} onLogout={handleLogout} />} />
+        <Routes>
 
-        <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/" element={<HomePage currentUser={currentUser} onLogout={handleLogout} />} />
 
-        <Route path="/catalog/devices" element={<CatalogPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
 
-        <Route path="/device/:id" element={<DevicePage currentUser={currentUser} />} />
+          <Route path="/catalog/devices" element={<CatalogPage />} />
 
-        <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
+          <Route path="/device/:id" element={<DevicePage currentUser={currentUser} />} />
 
-        <Route path="/sso/callback" element={<SSOCallback />} />
+          <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
 
-        <Route path="/device/add" element={<AddDevicePage />} />
+          <Route path="/sso/callback"element={<SSOCallback onLogin={handleLogin} />}/>
 
-        <Route path="/profile" element={<ProfilePage user={currentUser} onLogout={handleLogout} />} />
+          <Route path="/device/add" element={<AddDevicePage />} />
 
-        <Route path="/cart" element={<CartPage />} />
+          <Route path="/profile" element={<ProfilePage user={currentUser} onLogout={handleLogout} />} />
 
-        <Route path="/chats" element={<ChatsPage currentUser={currentUser} />} />
+          <Route path="/cart" element={<CartPage />} />
 
-        <Route path="/chats/:id" element={<ChatsPage currentUser={currentUser} />} />
+          <Route path="/chats" element={<ChatsPage currentUser={currentUser} />} />
 
-        <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/chats/:id" element={<ChatsPage currentUser={currentUser} />} />
 
-      </Routes>
+          <Route path="/requests" element={<RequestsPage />} />
+
+        </Routes>
     </>
   );
 }
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
+  function handleLogin(user) {
+      setCurrentUser(user);
+  }
+
+  async function handleLogout() {
+      try {
+          await logoutFromSSO();
+      } catch (error) {
+          console.error("SSO logout error:", error);
+      } finally {
+          localStorage.removeItem("access");
+          localStorage.removeItem("refresh");
+          localStorage.removeItem("user");
+
+          setCurrentUser(null);
+      }
+  }
   return (
     <BrowserRouter basename="/fablab">
-      <AppContent />
+      <AppContent
+        currentUser={currentUser}
+        handleLogin={handleLogin}
+        handleLogout={handleLogout}
+      />
     </BrowserRouter>
   );
 }

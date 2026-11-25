@@ -137,9 +137,9 @@ class SSOLoginView(APIView):
 class SSOCallbackView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def post(self, request):
         expected_state = request.session.pop("sso_oauth_state", None)
-        received_state = request.query_params.get("state", "")
+        received_state = request.data.get("state", "")
         if (
             not expected_state
             or not isinstance(received_state, str)
@@ -147,7 +147,7 @@ class SSOCallbackView(APIView):
         ):
             return Response({"detail": "Invalid OAuth state."}, status=status.HTTP_400_BAD_REQUEST)
 
-        code = request.query_params.get("code")
+        code = request.data.get("code")
         if not isinstance(code, str) or not code:
             return Response({"detail": "Missing authorization code."}, status=status.HTTP_400_BAD_REQUEST)
 
