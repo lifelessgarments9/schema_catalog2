@@ -167,7 +167,14 @@ class SSOCallbackView(APIView):
             print("BMSTU TOKEN STATUS:", token_response.status_code)
             print("BMSTU TOKEN CONTENT TYPE:", token_response.headers.get("Content-Type"))
 
+            print("BMSTU TOKEN STATUS:", token_response.status_code)
+            print("BMSTU TOKEN CONTENT TYPE:", token_response.headers.get("Content-Type"))
+            
+            print("BMSTU RAW ERROR BODY:", token_response.text)
+
             if not token_response.ok:
+                print(f"CRITICAL SSO ERROR: status={token_response.status_code}, body={token_response.text[:2000]}")
+                
                 logger.error(
                     "BMSTU token error: status=%s, body=%r",
                     token_response.status_code,
@@ -177,6 +184,7 @@ class SSOCallbackView(APIView):
                     {"detail": "BMSTU rejected the authorization code."},
                     status=status.HTTP_502_BAD_GATEWAY,
                 )
+
 
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
