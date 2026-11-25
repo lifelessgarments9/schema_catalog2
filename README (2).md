@@ -7,9 +7,9 @@
 Процесс авторизации реализован по классической схеме с подтверждением владения кодом доступа:
 
 1.  **Redirect**: Сервис генерирует уникальный параметр `state` для защиты от CSRF и перенаправляет пользователя на сервер SSO.
-2.  **Callback**: После успешного логина SSO возвращает пользователя на `REDIRECT_URI` с временным кодом (`code`) и тем же `state`.
-3.  **Token Exchange**: Сервис отправляет `code` на бэкенд SSO в обмен на `access_token`.
-4.  **UserInfo**: Используя полученный токен, сервис запрашивает профиль пользователя для идентификации.
+2.  **Django callback**: SSO возвращает браузер GET-запросом напрямую в Django с кодом (`code`) и `state`.
+3.  **Token Exchange и UserInfo**: Django сверяет `state`, обменивает код на токен и получает профиль пользователя.
+4.  **Frontend handoff**: Django перенаправляет браузер в React с одноразовым ticket во fragment; React обменивает его на JWT приложения.
 
 ## 2. Техническая конфигурация
 
@@ -19,7 +19,7 @@
 | :--- |:----------------------------------| :--- |
 | `SSO_CLIENT_ID` | Идентификатор приложения в SSO | `bmstu-guimc` |
 | `SSO_CLIENT_SECRET` | Секрет клиента (только backend) | задаётся в `.env` |
-| `SSO_REDIRECT_URI` | Callback, зарегистрированный у SSO | `https://lk.guimc.bmstu.ru/fablab/` |
+| `SSO_REDIRECT_URI` | Django callback, зарегистрированный у SSO | `https://lk.guimc.bmstu.ru/fablab/api/accounts/sso/callback/` |
 | `SSO_BASE_URL` | База OAuth2 endpoint-ов | `https://sso.bmstu.ru/portal4/oauth2` |
 | `APP_URL_PREFIX` | Префикс маршрутов приложения и backend API | `/fablab` |
 
@@ -89,7 +89,7 @@
 
 ### Размещение под URL-префиксом
 
-Для размещения под `/fablab/` задайте `APP_URL_PREFIX=/fablab`, `FRONTEND_URL=https://lk.guimc.bmstu.ru/fablab` и `REACT_APP_API_URL=https://lk.guimc.bmstu.ru/fablab`. Reverse proxy должен направлять `/fablab/` во frontend, а backend API пути под `/fablab/` — в Django, сохраняя prefix.
+Для размещения под `/fablab/` задайте `APP_URL_PREFIX=/fablab`, `FRONTEND_URL=https://lk.guimc.bmstu.ru/fablab`, `REACT_APP_BASE_PATH=/fablab` и `REACT_APP_API_URL=https://lk.guimc.bmstu.ru/fablab/api`. Nginx должен направлять `/fablab/api/` в Django, удаляя только сегмент `/api` при проксировании, чтобы Django получил путь `/fablab/...`; остальные запросы `/fablab/` направляются во frontend.
 
 ---
 
@@ -98,4 +98,4 @@
 TLS должен завершаться на reverse proxy, который направляет `/fablab/` во frontend, а маршруты `/fablab/accounts/`, `/fablab/catalog/`, `/fablab/rental/`, `/fablab/ai/`, `/fablab/admin/` и `/fablab/api/` в Django, сохраняя `/fablab` в request path. Для production proxy также должен передавать `X-Forwarded-Proto: https`.
 
 ### 🔴 Ошибка "invalid_client"
-Если SSO возвращает `invalid_client` с сообщением о несовпадении `redirect_uri`, убедитесь, что `SSO_REDIRECT_URI` в backend `.env` точно равен `https://lk.guimc.bmstu.ru/fablab/` и что этот адрес разрешён для `SSO_CLIENT_ID` на стороне BMSTU SSO.
+Если SSO возвращает `invalid_client` с сообщением о несовпадении `redirect_uri`, убедитесь, что `SSO_REDIRECT_URI` в backend `.env` точно равен `https://lk.guimc.bmstu.ru/fablab/api/accounts/sso/callback/` и что этот адрес разрешён для `SSO_CLIENT_ID` на стороне BMSTU SSO.

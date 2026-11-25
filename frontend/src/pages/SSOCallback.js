@@ -12,12 +12,10 @@ export default function SSOCallback({ onLogin }) {
         if (processed.current) return;
         processed.current = true;
 
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
-        const state = params.get("state");
-        const ssoError = params.get("error");
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const ticket = params.get("ticket");
 
-        // Убираем OAuth-параметры из адресной строки.
+        // The fragment is not sent to the web server; remove it before redeeming the ticket.
         window.history.replaceState(null, "", window.location.pathname);
 
         const fail = (message) => {
@@ -28,29 +26,18 @@ export default function SSOCallback({ onLogin }) {
             setStatus("error");
         };
 
-        if (ssoError) {
-            const description = params.get("error_description");
-
-            fail(
-                ssoError === "access_denied"
-                    ? "Вход отменён на стороне SSO."
-                    : `SSO не смог выполнить вход${description ? `: ${description}` : "."}`
-            );
+        if (!ticket) {
+            fail("В ответе сервера отсутствует ticket авторизации.");
             return;
         }
 
-        if (!code || !state) {
-            fail("В ответе SSO отсутствует код авторизации или state.");
-            return;
-        }
-
-        fetch(`${API_BASE_URL}/accounts/sso/callback/`, {
+        fetch(`${API_BASE_URL}/accounts/sso/complete/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "same-origin",
-            body: JSON.stringify({ code, state }),
+            body: JSON.stringify({ ticket }),
         })
             .then(async (response) => {
                 const data = await response.json().catch(() => ({}));

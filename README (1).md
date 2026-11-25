@@ -8,15 +8,15 @@
 
 1.  **Авторизация (Redirect):** Пользователь нажимает «Войти», сервис генерирует уникальный `state` (для защиты от CSRF) и перенаправляет пользователя на `sso.bmstu.ru/portal4/oauth2/authorize` с `client_id` и `redirect_uri`.
     ```http
-    GET https://sso.bmstu.ru/portal4/oauth2/authorize?response_type=code&client_id=bmstu-guimc&redirect_uri=https%3A%2F%2Flk.guimc.bmstu.ru%2Ffablab%2F&state=random_state_string
+    GET https://sso.bmstu.ru/portal4/oauth2/authorize?response_type=code&client_id=bmstu-guimc&redirect_uri=https%3A%2F%2Flk.guimc.bmstu.ru%2Ffablab%2Fapi%2Faccounts%2Fsso%2Fcallback%2F&state=random_state_string
     ```
 
-2.  **Получение токена (Callback):** После успешного входа SSO возвращает пользователя на наш `redirect_uri` с временным кодом (`code`). Сервис на бэкенде меняет этот код на `access_token`, отправляя POST-запрос на сервер SSO.
+2.  **Callback и получение токена:** После успешного входа SSO возвращает браузер GET-запросом напрямую на Django callback с временным кодом (`code`) и `state`. Django сверяет `state`, меняет код на токен server-to-server и запрашивает профиль пользователя.
     ```http
     POST /portal4/oauth2/token
     Content-Type: application/x-www-form-urlencoded
 
-    grant_type=authorization_code&code=AUTHORIZATION_CODE_HERE&client_id=bmstu-guimc&client_secret=SECRET&redirect_uri=https://lk.guimc.bmstu.ru/fablab/
+    grant_type=authorization_code&code=AUTHORIZATION_CODE_HERE&client_id=bmstu-guimc&client_secret=SECRET&redirect_uri=https://lk.guimc.bmstu.ru/fablab/api/accounts/sso/callback/
     ```
     
     *Пример успешного ответа:*
@@ -49,11 +49,8 @@ sequenceDiagram
     Note over Client, User: Fields: response_type=code, client_id, redirect_uri, state
 
     User->>SSO: 3. Ввод логина и пароля МГТУ
-    SSO-->>User: 4. 302 Redirect на frontend (Callback)
-    Note over SSO, User: URL: lk.guimc.bmstu.ru/fablab/?code=CODE&state=STATE
-
-    User->>Client: 5. Frontend отправляет code и state в backend
-    Note right of Client: Backend сверяет state с сессией
+    SSO-->>Client: 4. 302 Redirect на Django callback с code и state
+    Note right of Client: Django сверяет state с сессией
 
     rect rgb(150, 150, 150)
         Note right of Client: Обмен кода на токен (Backend-to-Backend)
@@ -67,7 +64,9 @@ sequenceDiagram
         SSO-->>Client: 9. JSON Response (fio, email, group, etc.)
     end
 
-        Client->>User: 10. Frontend получает локальные JWT приложения
+        Client->>User: 10. Redirect на React с одноразовым ticket во fragment
+        User->>Client: 11. React отправляет ticket на backend
+        Client->>User: 12. Backend выдаёт локальные JWT приложения
 ```
 
 ### Спецификация данных пользователя

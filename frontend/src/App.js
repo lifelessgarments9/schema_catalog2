@@ -84,7 +84,7 @@ export default function App() {
       }
   }
   return (
-    <BrowserRouter basename="/fablab">
+    <BrowserRouter basename={BASE_PATH || "/"}>
       <AppContent
         currentUser={currentUser}
         handleLogin={handleLogin}

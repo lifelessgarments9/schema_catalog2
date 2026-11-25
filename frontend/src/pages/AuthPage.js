@@ -16,6 +16,14 @@ function AuthPage({ onLogin }) {
         sso_config: "Не заданы все настройки SSO: проверьте SSO_CLIENT_SECRET и FRONTEND_URL.",
         sso_state: "Проверка безопасности SSO не пройдена. Попробуйте снова.",
         sso_https: "SSO требует HTTPS для адреса возврата.",
+        sso_denied: "Вход отменён на стороне SSO.",
+        sso_error: "SSO не смог выполнить вход.",
+        sso_code: "В ответе SSO отсутствует код авторизации.",
+        sso_exchange: "SSO отклонил код авторизации.",
+        sso_unavailable: "Сервис SSO временно недоступен.",
+        sso_userinfo: "Не удалось получить данные пользователя из SSO.",
+        sso_account_conflict: "Для этой учётной записи уже существует локальный пользователь.",
+        sso_inactive: "Учётная запись отключена.",
     };
 
     async function handleRegister() {

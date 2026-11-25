@@ -1,5 +1,6 @@
 import logging
 import secrets
+import time
 from urllib.parse import urlencode, urlparse
 
 import requests
@@ -7,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import redirect
 from django.utils.crypto import constant_time_compare
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -20,6 +22,7 @@ from app.accounts.serializers import UserSerializer, RegisterSerializer, LoginSe
 from app.accounts.services import AccountService
 
 logger = logging.getLogger(__name__)
+SSO_LOGIN_TICKET_TTL = 120
 
 
 class IsNotAuthenticated(BasePermission):
@@ -137,19 +140,25 @@ class SSOLoginView(APIView):
 class SSOCallbackView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def get(self, request):
         expected_state = request.session.pop("sso_oauth_state", None)
-        received_state = request.data.get("state", "")
+        received_state = request.query_params.get("state", "")
         if (
             not expected_state
             or not isinstance(received_state, str)
             or not constant_time_compare(expected_state, received_state)
         ):
-            return Response({"detail": "Invalid OAuth state."}, status=status.HTTP_400_BAD_REQUEST)
+            return sso_error_redirect("sso_state")
 
-        code = request.data.get("code")
+        sso_error = request.query_params.get("error")
+        if sso_error:
+            return sso_error_redirect(
+                "sso_denied" if sso_error == "access_denied" else "sso_error"
+            )
+
+        code = request.query_params.get("code")
         if not isinstance(code, str) or not code:
-            return Response({"detail": "Missing authorization code."}, status=status.HTTP_400_BAD_REQUEST)
+            return sso_error_redirect("sso_code")
 
         try:
             token_response = requests.post(
@@ -163,36 +172,18 @@ class SSOCallbackView(APIView):
                 },
                 timeout=10,
             )
-
-            print("BMSTU TOKEN STATUS:", token_response.status_code)
-            print("BMSTU TOKEN CONTENT TYPE:", token_response.headers.get("Content-Type"))
-
-            print("BMSTU TOKEN STATUS:", token_response.status_code)
-            print("BMSTU TOKEN CONTENT TYPE:", token_response.headers.get("Content-Type"))
-            
-            print("BMSTU RAW ERROR BODY:", token_response.text)
-
             if not token_response.ok:
-                print(f"CRITICAL SSO ERROR: status={token_response.status_code}, body={token_response.text[:2000]}")
-                
                 logger.error(
-                    "BMSTU token error: status=%s, body=%r",
+                    "BMSTU rejected the authorization code with HTTP %s",
                     token_response.status_code,
-                    token_response.text[:2000],
                 )
-                return Response(
-                    {"detail": "BMSTU rejected the authorization code."},
-                    status=status.HTTP_502_BAD_GATEWAY,
-                )
-
+                return sso_error_redirect("sso_exchange")
 
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
-            if not access_token:
-                return Response(
-                    {"detail": "SSO did not return an access token."},
-                    status=status.HTTP_502_BAD_GATEWAY,
-                )
+            if not isinstance(access_token, str) or not access_token:
+                logger.error("BMSTU token response did not contain an access token")
+                return sso_error_redirect("sso_exchange")
 
             userinfo_response = requests.get(
                 f"{settings.SSO_BASE_URL}/userinfo",
@@ -203,30 +194,33 @@ class SSOCallbackView(APIView):
             userinfo = userinfo_response.json()
         except (requests.RequestException, ValueError):
             logger.exception("BMSTU SSO token or userinfo request failed")
-            return Response({"detail": "SSO is temporarily unavailable."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return sso_error_redirect("sso_unavailable")
 
         person = userinfo.get("person", userinfo) if isinstance(userinfo, dict) else None
         if not isinstance(person, dict):
-            return Response({"detail": "Invalid SSO userinfo response."}, status=status.HTTP_502_BAD_GATEWAY)
+            logger.error("BMSTU returned an invalid userinfo response")
+            return sso_error_redirect("sso_userinfo")
 
         identity = person.get("guid") or person.get("id")
         if not identity:
-            return Response({"detail": "SSO user identity is missing."}, status=status.HTTP_502_BAD_GATEWAY)
+            logger.error("BMSTU userinfo response did not contain a user identity")
+            return sso_error_redirect("sso_userinfo")
 
         username = f"sso_{identity}"
         if len(username) > 150:
-            return Response({"detail": "SSO user identity is invalid."}, status=status.HTTP_502_BAD_GATEWAY)
+            logger.error("BMSTU user identity exceeds the supported username length")
+            return sso_error_redirect("sso_userinfo")
 
         user = User.objects.filter(username=username).first()
         if user and user.has_usable_password():
-            return Response({"detail": "SSO account conflicts with a local account."}, status=status.HTTP_409_CONFLICT)
+            return sso_error_redirect("sso_account_conflict")
         if not user:
             user = User.objects.create(
                 username=username,
                 password=make_password(None),
             )
         if not user.is_active:
-            return Response({"detail": "This account is inactive."}, status=status.HTTP_403_FORBIDDEN)
+            return sso_error_redirect("sso_inactive")
 
         updated_fields = []
         for field, value in (
@@ -241,11 +235,58 @@ class SSOCallbackView(APIView):
             user.save(update_fields=updated_fields)
 
         refresh = RefreshToken.for_user(user)
+        request.session.cycle_key()
         request.session["sso_access_token"] = access_token
-        return Response({
+        ticket = secrets.token_urlsafe(32)
+        request.session["sso_login_ticket"] = ticket
+        request.session["sso_login_ticket_created_at"] = timezone.now().timestamp()
+        request.session["sso_login_tokens"] = {
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-        })
+        }
+        return redirect(
+            f"{settings.FRONTEND_URL.rstrip('/')}/sso/callback/#ticket={ticket}"
+        )
+
+
+class SSOCompleteView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        ticket = request.data.get("ticket")
+        expected_ticket = request.session.get("sso_login_ticket")
+        created_at = request.session.get("sso_login_ticket_created_at")
+
+        if (
+            not isinstance(ticket, str)
+            or not isinstance(expected_ticket, str)
+            or not constant_time_compare(expected_ticket, ticket)
+        ):
+            return Response({"detail": "Invalid SSO login ticket."}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = time.time()
+        if (
+            not isinstance(created_at, (int, float))
+            or created_at > now
+            or now - created_at > SSO_LOGIN_TICKET_TTL
+        ):
+            request.session.pop("sso_login_ticket", None)
+            request.session.pop("sso_login_ticket_created_at", None)
+            request.session.pop("sso_login_tokens", None)
+            return Response({"detail": "SSO login ticket expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        tokens = request.session.get("sso_login_tokens")
+        if (
+            not isinstance(tokens, dict)
+            or not isinstance(tokens.get("access"), str)
+            or not isinstance(tokens.get("refresh"), str)
+        ):
+            return Response({"detail": "SSO login result is unavailable."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.session.pop("sso_login_ticket", None)
+        request.session.pop("sso_login_ticket_created_at", None)
+        request.session.pop("sso_login_tokens", None)
+        return Response(tokens)
 
 
 class SSOLogoutView(APIView):

@@ -7,6 +7,7 @@ from app.accounts.views import (
     LoginView,
     SSOLoginView,
     SSOCallbackView,
+    SSOCompleteView,
     SSOLogoutView,
 )
 
@@ -17,5 +18,6 @@ urlpatterns = [
     path("login/", LoginView.as_view()),
     path("sso/login/", SSOLoginView.as_view(), name="sso-login"),
     path("sso/callback/", SSOCallbackView.as_view(), name="sso-callback"),
+    path("sso/complete/", SSOCompleteView.as_view(), name="sso-complete"),
     path("sso/logout/", SSOLogoutView.as_view(), name="sso-logout"),
 ]
