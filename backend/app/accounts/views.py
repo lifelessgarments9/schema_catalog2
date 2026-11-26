@@ -161,17 +161,29 @@ class SSOCallbackView(APIView):
             return sso_error_redirect("sso_code")
 
         try:
-            token_response = requests.post(
-                f"{settings.SSO_BASE_URL}/token",
-                data={
-                    "grant_type": "authorization_code",
-                    "code": code,
-                    "client_id": settings.SSO_CLIENT_ID,
-                    "client_secret": settings.SSO_CLIENT_SECRET,
-                    "redirect_uri": settings.SSO_REDIRECT_URI,
-                },
-                timeout=10,
-            )
+            #
+            base = settings.SSO_BASE_URL
+            cid, sec, ru = settings.SSO_CLIENT_ID, settings.SSO_CLIENT_SECRET, settings.SSO_REDIRECT_URI
+            common = {"grant_type": "authorization_code", "code": code, "redirect_uri": ru}
+            variants = {
+                "post":  dict(data={**common, "client_id": cid, "client_secret": sec}),
+                "basic": dict(data=common, auth=(cid, sec)),
+                "nouri": dict(data={"grant_type": "authorization_code", "code": code,
+                                    "client_id": cid, "client_secret": sec}),
+                "json":  dict(json={**common, "client_id": cid, "client_secret": sec}),
+            }
+            token_response = None
+            for name, kw in variants.items():
+                r = requests.post(f"{base}/token", timeout=10, **kw)
+                logger.error("SSO variant=%s status=%s rid=%s body=%r",
+                            name, r.status_code, r.headers.get("x-request-id"), r.text[:300])
+                if r.ok:
+                    token_response = r
+                    break
+            if token_response is None:
+                return sso_error_redirect("sso_exchange")
+            #
+
             if not token_response.ok:
                 logger.error(
                     "BMSTU rejected the authorization code with HTTP %s",
