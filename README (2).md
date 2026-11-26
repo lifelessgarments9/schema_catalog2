@@ -73,29 +73,3 @@
 </details>
 
 ---
-## 🚀 Быстрый запуск (Docker)
-
-Для запуска проекта на любой машине:
-
-1.  **Запустите Docker**:
-    ```bash
-    sudo docker-compose up --build
-    ```
-
-2.  Убедитесь, что reverse proxy направляет `/fablab/` во frontend, API-пути с этим prefix — в backend, и передаёт `X-Forwarded-Proto: https`.
-3.  **Откройте сайт**: [https://lk.guimc.bmstu.ru/fablab/](https://lk.guimc.bmstu.ru/fablab/)
-
----
-
-### Размещение под URL-префиксом
-
-Для размещения под `/fablab/` задайте `APP_URL_PREFIX=/fablab`, `FRONTEND_URL=https://lk.guimc.bmstu.ru/fablab`, `REACT_APP_BASE_PATH=/fablab` и `REACT_APP_API_URL=https://lk.guimc.bmstu.ru/fablab/api`. Nginx должен направлять `/fablab/api/` в Django, удаляя только сегмент `/api` при проксировании, чтобы Django получил путь `/fablab/...`; остальные запросы `/fablab/` направляются во frontend.
-
----
-
-## HTTPS и reverse proxy
-
-TLS должен завершаться на reverse proxy, который направляет `/fablab/` во frontend, а маршруты `/fablab/accounts/`, `/fablab/catalog/`, `/fablab/rental/`, `/fablab/ai/`, `/fablab/admin/` и `/fablab/api/` в Django, сохраняя `/fablab` в request path. Для production proxy также должен передавать `X-Forwarded-Proto: https`.
-
-### 🔴 Ошибка "invalid_client"
-Если SSO возвращает `invalid_client` с сообщением о несовпадении `redirect_uri`, убедитесь, что `SSO_REDIRECT_URI` в backend `.env` точно равен `https://lk.guimc.bmstu.ru/fablab/api/accounts/sso/callback/` и что этот адрес разрешён для `SSO_CLIENT_ID` на стороне BMSTU SSO.

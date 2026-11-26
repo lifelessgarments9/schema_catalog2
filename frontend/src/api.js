@@ -92,10 +92,27 @@ export async function getCatalogStats() {
 export async function register(data) {
     const response = await fetch(`${API}/accounts/register/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify(data),
     });
-    return response.json();
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        const errorMessage = Object.entries(result)
+            .map(([field, messages]) =>
+                `${field}: ${Array.isArray(messages)
+                    ? messages.join(", ")
+                    : messages}`
+            )
+            .join("; ");
+
+        throw new Error(errorMessage || "Ошибка регистрации");
+    }
+
+    return result;
 }
 
 export async function login(data) {

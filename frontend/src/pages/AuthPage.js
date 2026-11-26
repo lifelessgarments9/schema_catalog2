@@ -28,16 +28,19 @@ function AuthPage({ onLogin }) {
 
     async function handleRegister() {
         setError("");
+
         try {
             const response = await register(registerData);
-            if (response.username || response.email || response.password) {
-                setError(JSON.stringify(response));
-                return;
-            }
+
             setActiveTab("login");
-            setLoginData({ username: registerData.username, password: registerData.password });
-        } catch {
-            setError("Ошибка регистрации");
+
+            setLoginData({
+                username: registerData.username,
+                password: registerData.password
+            });
+
+        } catch (error) {
+            setError(error.message || "Ошибка регистрации");
         }
     }
 
