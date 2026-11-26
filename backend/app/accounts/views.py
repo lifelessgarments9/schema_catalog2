@@ -5,6 +5,7 @@ from urllib.parse import urlencode, urlparse
 
 import requests
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import redirect
 from django.utils.crypto import constant_time_compare
@@ -161,7 +162,6 @@ class SSOCallbackView(APIView):
             return sso_error_redirect("sso_code")
 
         try:
-            
             token_response = requests.post(
                 f"{settings.SSO_BASE_URL}/token",
                 data={
@@ -173,18 +173,12 @@ class SSOCallbackView(APIView):
                 },
                 timeout=10,
             )
-
             if not token_response.ok:
-                logger.error(
-                    "BMSTU rejected the authorization code with HTTP %s",
-                    token_response.status_code,
-                )
                 return sso_error_redirect("sso_exchange")
 
             token_data = token_response.json()
             access_token = token_data.get("access_token") if isinstance(token_data, dict) else None
             if not isinstance(access_token, str) or not access_token:
-                logger.error("BMSTU token response did not contain an access token")
                 return sso_error_redirect("sso_exchange")
 
             userinfo_response = requests.get(
@@ -200,25 +194,48 @@ class SSOCallbackView(APIView):
 
         person = userinfo.get("person", userinfo) if isinstance(userinfo, dict) else None
         if not isinstance(person, dict):
-            logger.error("BMSTU returned an invalid userinfo response")
             return sso_error_redirect("sso_userinfo")
 
         identity = person.get("guid") or person.get("id")
-        if not identity:
-            logger.error("BMSTU userinfo response did not contain a user identity")
+        email = person.get("email")
+        if not identity or not isinstance(email, str):
             return sso_error_redirect("sso_userinfo")
 
-        username = f"sso_{identity}"
-        if len(username) > 150:
-            logger.error("BMSTU user identity exceeds the supported username length")
+        identity = str(identity)
+        email = email.strip()
+        username, separator, domain = email.partition("@")
+        username_field = User._meta.get_field("username")
+        email_field = User._meta.get_field("email")
+        if (
+            not separator
+            or not username
+            or not domain
+            or email.count("@") != 1
+            or len(email) > email_field.max_length
+            or len(identity) > User._meta.get_field("sso_identity").max_length
+            or len(username) > username_field.max_length
+        ):
             return sso_error_redirect("sso_userinfo")
 
-        user = User.objects.filter(username=username).first()
+        try:
+            username_field.run_validators(username)
+            email_field.run_validators(email)
+        except ValidationError:
+            return sso_error_redirect("sso_userinfo")
+
+        user = User.objects.filter(sso_identity=identity).first()
         if user and user.has_usable_password():
             return sso_error_redirect("sso_account_conflict")
+
+        username_owner = User.objects.filter(username=username).first()
+        if username_owner and (user is None or username_owner.pk != user.pk):
+            return sso_error_redirect("sso_account_conflict")
+
         if not user:
             user = User.objects.create(
                 username=username,
+                email=email,
+                sso_identity=identity,
                 password=make_password(None),
             )
         if not user.is_active:
@@ -226,9 +243,10 @@ class SSOCallbackView(APIView):
 
         updated_fields = []
         for field, value in (
-            ("email", person.get("email", "")),
+            ("email", email),
             ("first_name", person.get("firstname", "")),
             ("last_name", person.get("lastname", "")),
+            ("username", username),
         ):
             if value and getattr(user, field) != value:
                 setattr(user, field, value)

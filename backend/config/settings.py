@@ -63,6 +63,10 @@ SSO_CLIENT_SECRET = os.environ.get("SSO_CLIENT_SECRET", "")
 SSO_REDIRECT_URI = os.environ.get("SSO_REDIRECT_URI", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 APP_URL_PREFIX = os.environ.get("APP_URL_PREFIX", "").strip("/")
+OLLAMA_BASE_URL = os.environ.get(
+    "OLLAMA_BASE_URL",
+    "http://localhost:11434",
+).rstrip("/")
 
 AUTH_USER_MODEL = "accounts.User"
 

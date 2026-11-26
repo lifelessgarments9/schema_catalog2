@@ -1,5 +1,9 @@
 import json
 import ollama
+from django.conf import settings
+
+
+client = ollama.Client(host=settings.OLLAMA_BASE_URL)
 
 
 class EmbeddingService:
@@ -7,7 +11,7 @@ class EmbeddingService:
 
     @classmethod
     def create(cls, text: str) -> list:
-        response = ollama.embed(model=cls.MODEL, input=text)
+        response = client.embed(model=cls.MODEL, input=text)
         return response["embeddings"][0]
 
     @classmethod

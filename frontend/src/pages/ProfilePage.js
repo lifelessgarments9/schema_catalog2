@@ -87,10 +87,9 @@ export default function ProfilePage({ user, onLogout }) {
                     </div>
                 </div>
 
-                {/* История заявок */}
                 <div className="row justify-content-center">
                     <div className="col-12 col-lg-10">
-                        <h2 className="section-title mb-4">
+                        <h2 className="section-title mb-4 text-center">
                             История заявок
                         </h2>
                         {requestsLoading ? (
@@ -102,7 +101,7 @@ export default function ProfilePage({ user, onLogout }) {
                                 </div>
                             </div>
                         ) : requests.length === 0 ? (
-                            <div className="alert alert-light">
+                            <div className="alert alert-light text-center"> 
                                 У вас пока нет заявок.
                             </div>
                         ) : (
